@@ -349,7 +349,7 @@ public static class MobileAppSceneBuilder
         var contentRect = content.GetComponent<RectTransform>();
         contentRect.anchorMin = Vector2.zero;
         contentRect.anchorMax = Vector2.one;
-        contentRect.offsetMin = new Vector2(0f, 140f); // 140px bottom navigation height
+        contentRect.offsetMin = new Vector2(0f, 90f); // 90px bottom navigation height
         contentRect.offsetMax = Vector2.zero;
 
         var home = CreateTabScreen<HomeDashboardController>(content.transform, "HomeTab");
@@ -381,7 +381,7 @@ public static class MobileAppSceneBuilder
         bottomRect.anchorMin = new Vector2(0, 0);
         bottomRect.anchorMax = new Vector2(1, 0);
         bottomRect.pivot = new Vector2(0.5f, 0);
-        bottomRect.sizeDelta = new Vector2(0, 140);
+        bottomRect.sizeDelta = new Vector2(0, 90);
         bottomRect.anchoredPosition = Vector2.zero;
 
         var bottomLayout = bottomNav.AddComponent<HorizontalLayoutGroup>();
@@ -390,6 +390,8 @@ public static class MobileAppSceneBuilder
         bottomLayout.childAlignment = TextAnchor.MiddleCenter;
         bottomLayout.childControlWidth = true;
         bottomLayout.childControlHeight = true;
+        bottomLayout.childForceExpandHeight = false;
+        bottomLayout.childForceExpandWidth = true;
 
         var navBar = bottomNav.AddComponent<BottomNavBar>();
         var tabs = new BottomNavBar.TabButton[5];
@@ -441,7 +443,8 @@ public static class MobileAppSceneBuilder
         layout.spacing = 4;
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandHeight = false;
 
         var iconText = CreateText(btn.transform, "Icon", icon, 32, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
         var iconElem = iconText.AddComponent<LayoutElement>();
@@ -486,18 +489,23 @@ public static class MobileAppSceneBuilder
         layout.spacing = 24;
         layout.childAlignment = TextAnchor.UpperCenter;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
 
         // 1. Top Header Bar (Avatar + Greeting + Bell)
         var topBar = CreatePanel(content.transform, "TopBar", Color.clear);
         var topBarElem = topBar.AddComponent<LayoutElement>();
         topBarElem.preferredHeight = 56f;
+        topBarElem.flexibleWidth = 1f;
 
         var topLayout = topBar.AddComponent<HorizontalLayoutGroup>();
         topLayout.childAlignment = TextAnchor.MiddleLeft;
         topLayout.spacing = 16;
         topLayout.childControlWidth = true;
         topLayout.childControlHeight = true;
+        topLayout.childForceExpandWidth = false;
+        topLayout.childForceExpandHeight = false;
 
         // Avatar Icon
         var avatar = CreatePanel(topBar.transform, "Avatar", SurfaceDark);
@@ -516,6 +524,10 @@ public static class MobileAppSceneBuilder
         var userLayout = userStack.AddComponent<VerticalLayoutGroup>();
         userLayout.spacing = 2;
         userLayout.childAlignment = TextAnchor.MiddleLeft;
+        userLayout.childControlWidth = true;
+        userLayout.childControlHeight = true;
+        userLayout.childForceExpandWidth = true;
+        userLayout.childForceExpandHeight = false;
 
         CreateText(userStack.transform, "WelcomeTag", "WELCOME BACK", 12, FontStyles.Bold, TextAlignmentOptions.Left, TextMuted);
         CreateText(userStack.transform, "GreetingText", "Good morning, Alex", 22, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
@@ -533,11 +545,16 @@ public static class MobileAppSceneBuilder
         var heroCard = CreatePanel(content.transform, "HeroBannerCard", SurfaceDark);
         var heroElem = heroCard.AddComponent<LayoutElement>();
         heroElem.preferredHeight = 170f;
+        heroElem.flexibleWidth = 1f;
 
         var heroLayout = heroCard.AddComponent<HorizontalLayoutGroup>();
         heroLayout.padding = new RectOffset(24, 24, 24, 24);
         heroLayout.spacing = 16;
         heroLayout.childAlignment = TextAnchor.MiddleCenter;
+        heroLayout.childControlWidth = true;
+        heroLayout.childControlHeight = true;
+        heroLayout.childForceExpandWidth = false;
+        heroLayout.childForceExpandHeight = false;
 
         var heroTextCol = CreatePanel(heroCard.transform, "HeroTextCol", Color.clear);
         var heroColElem = heroTextCol.AddComponent<LayoutElement>();
@@ -546,6 +563,10 @@ public static class MobileAppSceneBuilder
         var heroColLayout = heroTextCol.AddComponent<VerticalLayoutGroup>();
         heroColLayout.spacing = 8;
         heroColLayout.childAlignment = TextAnchor.MiddleLeft;
+        heroColLayout.childControlWidth = true;
+        heroColLayout.childControlHeight = true;
+        heroColLayout.childForceExpandWidth = true;
+        heroColLayout.childForceExpandHeight = false;
 
         CreateText(heroTextCol.transform, "HeroTitle", "Start New\nScan", 26, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
         CreateText(heroTextCol.transform, "HeroSub", "Analyze your space for Vastu harmony", 14, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
@@ -558,24 +579,31 @@ public static class MobileAppSceneBuilder
         var actHeader = CreateText(content.transform, "SectionHeader", "Quick Actions", 22, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
         var actHeadElem = actHeader.AddComponent<LayoutElement>();
         actHeadElem.preferredHeight = 32f;
+        actHeadElem.flexibleWidth = 1f;
 
         var actionGrid = CreatePanel(content.transform, "ActionGrid", Color.clear);
         var gridElem = actionGrid.AddComponent<LayoutElement>();
         gridElem.preferredHeight = 250f;
+        gridElem.flexibleWidth = 1f;
 
         var gridVertLayout = actionGrid.AddComponent<VerticalLayoutGroup>();
         gridVertLayout.spacing = 12;
         gridVertLayout.childControlWidth = true;
         gridVertLayout.childControlHeight = true;
+        gridVertLayout.childForceExpandWidth = true;
+        gridVertLayout.childForceExpandHeight = false;
 
         // Row 1
         var row1 = CreatePanel(actionGrid.transform, "Row1", Color.clear);
         var r1Elem = row1.AddComponent<LayoutElement>();
         r1Elem.preferredHeight = 114f;
+        r1Elem.flexibleWidth = 1f;
         var r1Layout = row1.AddComponent<HorizontalLayoutGroup>();
         r1Layout.spacing = 12;
         r1Layout.childControlWidth = true;
         r1Layout.childControlHeight = true;
+        r1Layout.childForceExpandWidth = false;
+        r1Layout.childForceExpandHeight = false;
 
         var scan = CreateQuickAction(row1.transform, "ScanAction", "Scan Room", "MEASURE & MAP", "📐", AppTab.ScanAR);
         var design = CreateQuickAction(row1.transform, "DesignAction", "AI Design", "PROFOUND REVAMP", "✨", AppTab.DesignAI);
@@ -584,10 +612,13 @@ public static class MobileAppSceneBuilder
         var row2 = CreatePanel(actionGrid.transform, "Row2", Color.clear);
         var r2Elem = row2.AddComponent<LayoutElement>();
         r2Elem.preferredHeight = 114f;
+        r2Elem.flexibleWidth = 1f;
         var r2Layout = row2.AddComponent<HorizontalLayoutGroup>();
         r2Layout.spacing = 12;
         r2Layout.childControlWidth = true;
         r2Layout.childControlHeight = true;
+        r2Layout.childForceExpandWidth = false;
+        r2Layout.childForceExpandHeight = false;
 
         var vastu = CreateQuickAction(row2.transform, "VastuAction", "Vastu Check", "ENERGY FLOW", "🧭", AppTab.Vastu);
         var saved = CreateQuickAction(row2.transform, "SavedAction", "Library", "PAST PROJECTS", "📚", AppTab.Library);
@@ -603,9 +634,14 @@ public static class MobileAppSceneBuilder
         var projHeaderRow = CreatePanel(content.transform, "ProjHeaderRow", Color.clear);
         var projHeadElem = projHeaderRow.AddComponent<LayoutElement>();
         projHeadElem.preferredHeight = 32f;
+        projHeadElem.flexibleWidth = 1f;
 
         var projHeadLayout = projHeaderRow.AddComponent<HorizontalLayoutGroup>();
         projHeadLayout.childAlignment = TextAnchor.MiddleCenter;
+        projHeadLayout.childControlWidth = true;
+        projHeadLayout.childControlHeight = true;
+        projHeadLayout.childForceExpandWidth = false;
+        projHeadLayout.childForceExpandHeight = false;
 
         var recentTitle = CreateText(projHeaderRow.transform, "RecentTitle", "Recent Projects", 22, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
         var recentTitleElem = recentTitle.AddComponent<LayoutElement>();
@@ -619,11 +655,16 @@ public static class MobileAppSceneBuilder
         var featCard = CreatePanel(content.transform, "FeaturedCard", SurfaceDark);
         var featElem = featCard.AddComponent<LayoutElement>();
         featElem.preferredHeight = 150f;
+        featElem.flexibleWidth = 1f;
 
         var featLayout = featCard.AddComponent<VerticalLayoutGroup>();
         featLayout.padding = new RectOffset(24, 24, 20, 20);
         featLayout.spacing = 10;
         featLayout.childAlignment = TextAnchor.UpperLeft;
+        featLayout.childControlWidth = true;
+        featLayout.childControlHeight = true;
+        featLayout.childForceExpandWidth = true;
+        featLayout.childForceExpandHeight = false;
 
         CreateText(featCard.transform, "FeatStatus", "● 92 Score  •  Harmony Achieved", 14, FontStyles.Bold, TextAlignmentOptions.Left, SuccessAccent);
         CreateText(featCard.transform, "FeatTitle", "Main Living Room", 22, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
@@ -633,11 +674,16 @@ public static class MobileAppSceneBuilder
         var vastuCard = CreatePanel(content.transform, "VastuWisdomCard", SurfaceDark);
         var vastuElem = vastuCard.AddComponent<LayoutElement>();
         vastuElem.preferredHeight = 160f;
+        vastuElem.flexibleWidth = 1f;
 
         var vastuCardLayout = vastuCard.AddComponent<VerticalLayoutGroup>();
         vastuCardLayout.padding = new RectOffset(24, 24, 20, 20);
         vastuCardLayout.spacing = 10;
         vastuCardLayout.childAlignment = TextAnchor.UpperLeft;
+        vastuCardLayout.childControlWidth = true;
+        vastuCardLayout.childControlHeight = true;
+        vastuCardLayout.childForceExpandWidth = true;
+        vastuCardLayout.childForceExpandHeight = false;
 
         CreateText(vastuCard.transform, "VastuTag", "💡 VASTU WISDOM", 12, FontStyles.Bold, TextAlignmentOptions.Left, TextMuted);
         CreateText(vastuCard.transform, "VastuBody", "Placing a mirror on the North wall of your living room can double the flow of positive energy.", 15, FontStyles.Normal, TextAlignmentOptions.Left, Color.white);
@@ -664,7 +710,9 @@ public static class MobileAppSceneBuilder
         layout.spacing = 6;
         layout.childAlignment = TextAnchor.UpperLeft;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
 
         // Top-left Icon Badge
         var iconBadge = CreatePanel(card.transform, "IconBadge", SurfaceElevated);
@@ -1064,7 +1112,7 @@ public static class MobileAppSceneBuilder
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = go.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1080, 2400);
+        scaler.referenceResolution = new Vector2(390, 844);
         scaler.matchWidthOrHeight = 0f; // Width match for portrait mobile screens
         go.AddComponent<GraphicRaycaster>();
 

@@ -102,14 +102,14 @@ public class BottomNavBar : MonoBehaviour
                 continue;
 
             bool active = tabs[i].tab == activeTab;
-            if (tabs[i].highlight != null)
-                tabs[i].highlight.color = active ? activeColor : inactiveColor;
+            // if (tabs[i].highlight != null)
+            //     tabs[i].highlight.color = active ? activeColor : inactiveColor;
 
-            var texts = tabs[i].button.GetComponentsInChildren<TextMeshProUGUI>(true);
-            foreach (var t in texts)
-            {
-                t.color = active ? activeTextColor : inactiveTextColor;
-            }
+            // var texts = tabs[i].button.GetComponentsInChildren<TextMeshProUGUI>(true);
+            // foreach (var t in texts)
+            // {
+            //     t.color = active ? activeTextColor : inactiveTextColor;
+            // }
         }
     }
 }
