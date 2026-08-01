@@ -1,0 +1,120 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\assets\\furnitureselector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\furnitureselector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:2:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|c:\\users\\shabb\\desktop\\unity\\arfurnituredemo\\assets\\placeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:2:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\placeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\assets\\furnitureinteraction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\furnitureinteraction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\assets\\deletefurniture.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\deletefurniture.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\assets\\furniturerotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\furniturerotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:1:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|c:\\users\\shabb\\desktop\\unity\\arfurnituredemo\\assets\\placeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:1:0:{F398BC25-666D-62AC-B1B5-0B6238C80750}|Assembly-CSharp.csproj|solutionrelative:assets\\placeobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PlaceObject.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\PlaceObject.cs",
+              "RelativeDocumentMoniker": "Assets\\PlaceObject.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\PlaceObject.cs",
+              "RelativeToolTip": "Assets\\PlaceObject.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-07T13:34:07.536Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Assets\\PlaceObject.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\PlaceObject.cs",
+              "RelativeDocumentMoniker": "Assets\\PlaceObject.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\PlaceObject.cs",
+              "RelativeToolTip": "Assets\\PlaceObject.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-08T04:05:21.279Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DeleteFurniture.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\DeleteFurniture.cs",
+              "RelativeDocumentMoniker": "Assets\\DeleteFurniture.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\DeleteFurniture.cs",
+              "RelativeToolTip": "Assets\\DeleteFurniture.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-07T12:53:54.513Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FurnitureSelector.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureSelector.cs",
+              "RelativeDocumentMoniker": "Assets\\FurnitureSelector.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureSelector.cs",
+              "RelativeToolTip": "Assets\\FurnitureSelector.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-07T12:53:37.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FurnitureRotation.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureRotation.cs",
+              "RelativeDocumentMoniker": "Assets\\FurnitureRotation.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureRotation.cs",
+              "RelativeToolTip": "Assets\\FurnitureRotation.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAA1AAAAAAAAAA==",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKmSURBVDhP7dFPSJNxHAbw5/vunQ3xbU4naqaSMxObhTkqA\u002B3PQUrwEISU9AfyX6dyEd0ko1NQblYQKdLB1ENKsDoEUSEWNrc0LaxMDwnmdJbOmZtu7/vtkBvvpZMdfW7fHx94HvgBG1lvCAC\u002BL3w39Hzr0T358gifvZPISMqAtdCK0sQCf3KyeSmCO0Y6DFpBG6owVywxXxPah01GY6zRV5ZTthIxAgAEggGboJA7xBo3iWG3qJA7Rhbdv2RNXQQCQDAUtPlX/XUA0D5sMobl0HPP0lSJ2ogAcGfIliAK4pbdibtcC8GFe4VJFpvT40wY8AxIavxwtCWBAQkAWj/aNQpiksHQqQ0BQE5LliNzc6ZUnFLSKjMcRFTX73lTuxTyd53Lr\u002Br8HfBX2j80wbfiO0VEPwD0MjgOQC0Yz0x609g2aftY94nuThEAvMuz8Aa8vS9Ovu5cK7ptbsuNJYUnREXUg4TCv/WkZ2YQoRBMOhC0IM4GSNIIUKIzDfY4h6FZaow\u002B/CNqZ2yKTY23S1PxzVK52gjq43\u002BEsNYMosH5S/7oSnNbbgMB49aCq\u002BOLq74G29At\u002BFYX94LZR8BXJugAKgZ4xKTPnsnSm1yPj/fcEAEgTUpHupR\u002BsKivqFI2wEHzVNc7\u002Ber04qqvKyyE3zMrgwAA5h1rnzIIcBzA\u002B8GYAPMYyzQRXXjl5WVHWJHLF1cWXE5P/90jGaV2ZiVBVuTr9489iK4\u002B0L7PwcBg/xlnY3H7nlQFWjeYLrw9\u002B\u002B5pxAgAUJVXM58amzLtmnFt9Qbmbo7OfVo5lHZ4\u002BmJBvT8CAaA6r2a\u002BemetHwBq8uvl83k1s1Xm2qDaCAAgh2QrWLCILFtkkIUgWkRNyAINWtRY3sRWXuYWANCN6X4qWj5KPupTm42sP38A\u002BPobLn6iw4AAAAAASUVORK5CYII=",
+              "WhenOpened": "2026-05-07T12:53:37.307Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FurnitureInteraction.cs",
+              "DocumentMoniker": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureInteraction.cs",
+              "RelativeDocumentMoniker": "Assets\\FurnitureInteraction.cs",
+              "ToolTip": "C:\\Users\\shabb\\Desktop\\Unity\\ARFurnitureDemo\\Assets\\FurnitureInteraction.cs",
+              "RelativeToolTip": "Assets\\FurnitureInteraction.cs",
+              "ViewState": "AgIAAFIAAAAAAAAAAADwv3cAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-07T12:53:37.312Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
