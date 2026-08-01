@@ -4,7 +4,25 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/UI/Bootstrap.unity
+    guid: c5b583c37d51b8741a665d6568ee243f
+  - enabled: 1
+    path: Assets/Scenes/UI/SplashScreen.unity
+    guid: c4480027a606d9943bd225f7f94357c5
+  - enabled: 1
+    path: Assets/Scenes/UI/Onboarding.unity
+    guid: a4dd58e8cea5729448c75a0988781732
+  - enabled: 1
+    path: Assets/Scenes/UI/Permissions.unity
+    guid: 5f3ed545a7f60964bbb39a523c2c00fd
+  - enabled: 1
+    path: Assets/Scenes/UI/MainShell.unity
+    guid: e2aa3394282c7c04a9bf509788c6cc4f
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 1bbff8eff517413458f5c80a7911869a, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 299b0f2085dca7f4ead8bb56cc58d160, type: 2}

@@ -9,17 +9,17 @@ public class FurnitureRotation : MonoBehaviour
 
     void Update()
     {
-        if (furnitureInteraction.selectedObject != null)
-        {
-            if (rotateRight)
-            {
-                furnitureInteraction.selectedObject.transform.Rotate(0, 100 * Time.deltaTime, 0);
-            }
+        if (furnitureInteraction == null || furnitureInteraction.selectedObject == null)
+            return;
 
-            if (rotateLeft)
-            {
-                furnitureInteraction.selectedObject.transform.Rotate(0, -100 * Time.deltaTime, 0);
-            }
+        if (rotateRight)
+        {
+            furnitureInteraction.selectedObject.transform.Rotate(0, 100 * Time.deltaTime, 0);
+        }
+
+        if (rotateLeft)
+        {
+            furnitureInteraction.selectedObject.transform.Rotate(0, -100 * Time.deltaTime, 0);
         }
     }
 

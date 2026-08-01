@@ -22,7 +22,8 @@ public class RoomMeasurement : MonoBehaviour
     {
         raycastManager = GetComponent<ARRaycastManager>();
 
-        distanceText.text = "Tap first corner";
+        if (distanceText != null)
+            distanceText.text = "Tap first corner";
     }
 
     void Update()
@@ -39,7 +40,7 @@ public class RoomMeasurement : MonoBehaviour
         if (touch.phase != TouchPhase.Began)
             return;
 
-        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
+        if (raycastManager != null && raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
         {
             Vector3 hitPos = hits[0].pose.position;
 
@@ -49,7 +50,8 @@ public class RoomMeasurement : MonoBehaviour
             {
                 point1 = hitPos;
 
-                distanceText.text = "Tap second corner";
+                if (distanceText != null)
+                    distanceText.text = "Tap second corner";
             }
             else if (tapCount == 2)
             {
@@ -57,8 +59,9 @@ public class RoomMeasurement : MonoBehaviour
 
                 float width = Vector3.Distance(point1, point2);
 
-                distanceText.text =
-                    "Width: " + width.ToString("F2") + " m\nTap third corner";
+                if (distanceText != null)
+                    distanceText.text =
+                        "Width: " + width.ToString("F2") + " m\nTap third corner";
             }
             else if (tapCount == 3)
             {
@@ -68,11 +71,12 @@ public class RoomMeasurement : MonoBehaviour
 
                 float length = Vector3.Distance(point2, point3);
 
-                distanceText.text =
-                    "Room Size:\n" +
-                    "Width: " + width.ToString("F2") + " m\n" +
-                    "Length: " + length.ToString("F2") + " m\n\n" +
-                    "Now tap to place furniture";
+                if (distanceText != null)
+                    distanceText.text =
+                        "Room Size:\n" +
+                        "Width: " + width.ToString("F2") + " m\n" +
+                        "Length: " + length.ToString("F2") + " m\n\n" +
+                        "Now tap to place furniture";
             }
         }
     }

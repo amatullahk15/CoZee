@@ -21,6 +21,9 @@ public class PlaceObject : MonoBehaviour
 
     void Update()
     {
+        if (roomMeasurement == null || objectPrefab == null || raycastManager == null || Camera.main == null)
+            return;
+
         // First complete room measurement
         if (roomMeasurement.tapCount < 3)
             return;
@@ -76,12 +79,14 @@ public class PlaceObject : MonoBehaviour
 
             // Random color
             Renderer renderer = obj.GetComponent<Renderer>();
-
-            renderer.material.color = new Color(
-                Random.value,
-                Random.value,
-                Random.value
-            );
+            if (renderer != null && renderer.material != null)
+            {
+                renderer.material.color = new Color(
+                    Random.value,
+                    Random.value,
+                    Random.value
+                );
+            }
         }
     }
 }

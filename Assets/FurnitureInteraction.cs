@@ -21,7 +21,8 @@ public class FurnitureInteraction : MonoBehaviour
     {
         raycastManager = GetComponent<ARRaycastManager>();
 
-        selectionRing.SetActive(false);
+        if (selectionRing != null)
+            selectionRing.SetActive(false);
     }
 
     void Update()
@@ -49,10 +50,12 @@ public class FurnitureInteraction : MonoBehaviour
                 {
                     selectedObject = hitObject.collider.gameObject;
 
-                    selectionRing.SetActive(true);
-
-                    selectionRing.transform.position =
-                        selectedObject.transform.position + new Vector3(0, -0.4f, 0);
+                    if (selectionRing != null)
+                    {
+                        selectionRing.SetActive(true);
+                        selectionRing.transform.position =
+                            selectedObject.transform.position + new Vector3(0, -0.4f, 0);
+                    }
                 }
             }
             else
@@ -74,8 +77,9 @@ public class FurnitureInteraction : MonoBehaviour
 
                 selectedObject.transform.position = hitPose.position;
 
-                selectionRing.transform.position =
-                    selectedObject.transform.position + new Vector3(0, -0.4f, 0);
+                if (selectionRing != null)
+                    selectionRing.transform.position =
+                        selectedObject.transform.position + new Vector3(0, -0.4f, 0);
             }
         }
 

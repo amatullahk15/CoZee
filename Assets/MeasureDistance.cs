@@ -18,7 +18,8 @@ public class MeasureDistance : MonoBehaviour
     {
         raycastManager = GetComponent<ARRaycastManager>();
 
-        distanceText.text = "Tap 2 points";
+        if (distanceText != null)
+            distanceText.text = "Tap 2 points";
     }
 
     void Update()
@@ -29,7 +30,7 @@ public class MeasureDistance : MonoBehaviour
 
             if (touch.phase == TouchPhase.Began)
             {
-                if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
+                if (raycastManager != null && raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
                 {
                     Vector3 hitPos = hits[0].pose.position;
 
@@ -38,13 +39,15 @@ public class MeasureDistance : MonoBehaviour
                         firstPoint = hitPos;
                         hasFirstPoint = true;
 
-                        distanceText.text = "First point selected";
+                        if (distanceText != null)
+                            distanceText.text = "First point selected";
                     }
                     else
                     {
                         float distance = Vector3.Distance(firstPoint, hitPos);
 
-                        distanceText.text = "Distance: " + distance.ToString("F2") + " m";
+                        if (distanceText != null)
+                            distanceText.text = "Distance: " + distance.ToString("F2") + " m";
 
                         hasFirstPoint = false;
                     }
