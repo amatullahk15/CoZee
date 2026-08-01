@@ -1174,78 +1174,169 @@ public static class MobileAppSceneBuilder
     static void WireVastuTab(GameObject tab)
     {
         var layout = tab.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(36, 36, 36, 36);
-        layout.spacing = 16;
-        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.padding = new RectOffset(0, 0, 0, 0); // Full width scroll
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandHeight = false;
 
-        // Header Card
-        var header = CreatePanel(tab.transform, "Header", SurfaceDark);
-        var headElem = header.AddComponent<LayoutElement>();
-        headElem.preferredHeight = 100f;
+        // Scroll View
+        var scrollGo = CreatePanel(tab.transform, "Scroll View", Color.clear);
+        var scrollElem = scrollGo.AddComponent<LayoutElement>();
+        scrollElem.flexibleHeight = 1f;
 
-        var headLayout = header.AddComponent<VerticalLayoutGroup>();
-        headLayout.padding = new RectOffset(24, 24, 16, 16);
-        headLayout.spacing = 4;
-        headLayout.childAlignment = TextAnchor.MiddleLeft;
+        var scrollRect = scrollGo.AddComponent<ScrollRect>();
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.scrollSensitivity = 35f;
 
-        CreateText(header.transform, "Title", "Vastu Assistant", 30, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
-        CreateText(header.transform, "Sub", "Directional balance and spatial layout guidelines", 16, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
+        var viewport = CreatePanel(scrollGo.transform, "Viewport", Color.clear);
+        var vRect = viewport.GetComponent<RectTransform>();
+        Stretch(vRect);
+        var mask = viewport.AddComponent<RectMask2D>();
+        scrollRect.viewport = vRect;
 
-        // Direction Selector Panel
-        var dirPanel = CreatePanel(tab.transform, "DirectionPanel", SurfaceDark);
-        var dirElem = dirPanel.AddComponent<LayoutElement>();
-        dirElem.preferredHeight = 84f;
+        var content = CreatePanel(viewport.transform, "Content", Color.clear);
+        var cRect = content.GetComponent<RectTransform>();
+        Stretch(cRect);
+        
+        var cLayout = content.AddComponent<VerticalLayoutGroup>();
+        cLayout.padding = new RectOffset(36, 36, 36, 36);
+        cLayout.spacing = 24;
+        cLayout.childControlWidth = true;
+        cLayout.childControlHeight = true;
+        cLayout.childForceExpandHeight = false;
 
-        var dirLayout = dirPanel.AddComponent<HorizontalLayoutGroup>();
-        dirLayout.padding = new RectOffset(16, 16, 12, 12);
-        dirLayout.spacing = 12;
-        dirLayout.childAlignment = TextAnchor.MiddleCenter;
-        dirLayout.childControlWidth = true;
-        dirLayout.childControlHeight = true;
+        var csf = content.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        scrollRect.content = cRect;
 
-        dirPanel.AddComponent<RoomDirectionSelector>();
-        string[] dirs = { "North 🧭", "East 🌅", "South ☀️", "West 🌇" };
-        foreach (var d in dirs)
+        // 1. Header
+        CreateText(content.transform, "Title", "Vastu Consultant", 30, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
+
+        // 2. Score Section
+        var scoreCard = CreatePanel(content.transform, "ScoreCard", SurfaceDark);
+        var scElem = scoreCard.AddComponent<LayoutElement>();
+        scElem.preferredHeight = 120f;
+        var scLayout = scoreCard.AddComponent<HorizontalLayoutGroup>();
+        scLayout.padding = new RectOffset(16, 16, 16, 16);
+        scLayout.spacing = 16;
+        scLayout.childAlignment = TextAnchor.MiddleLeft;
+        scLayout.childControlWidth = true;
+        scLayout.childControlHeight = true;
+        scLayout.childForceExpandWidth = false;
+
+        var scoreCircle = CreatePanel(scoreCard.transform, "ScoreCircle", new Color(0.12f, 0.16f, 0.22f, 1f));
+        var circElem = scoreCircle.AddComponent<LayoutElement>();
+        circElem.preferredWidth = 80f;
+        var circLayout = scoreCircle.AddComponent<VerticalLayoutGroup>();
+        circLayout.childAlignment = TextAnchor.MiddleCenter;
+        
+        var scoreText = CreateText(scoreCircle.transform, "ScoreText", "85", 28, FontStyles.Bold, TextAlignmentOptions.Center, new Color(0.3f, 0.8f, 0.5f, 1f));
+        var scoreSub = CreateText(scoreCircle.transform, "ScoreSub", "Out of 100", 10, FontStyles.Normal, TextAlignmentOptions.Center, TextMuted);
+
+        var summaryText = CreateText(scoreCard.transform, "Summary", "Your bedroom layout is highly aligned with Vastu principles. Minor adjustments can optimize energy flow.", 14, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
+        var summaryElem = summaryText.gameObject.AddComponent<LayoutElement>();
+        summaryElem.flexibleWidth = 1f;
+
+        // 3. Compass Toggle
+        var compassPanel = CreatePanel(content.transform, "CompassPanel", SurfaceDark);
+        var cpElem = compassPanel.AddComponent<LayoutElement>();
+        cpElem.preferredHeight = 45f;
+        var cpLayout = compassPanel.AddComponent<HorizontalLayoutGroup>();
+        cpLayout.padding = new RectOffset(16, 16, 0, 0);
+        cpLayout.childAlignment = TextAnchor.MiddleLeft;
+        cpLayout.childControlWidth = false;
+
+        var cIcon = CreateText(compassPanel.transform, "Icon", "🧭", 20, FontStyles.Normal, TextAlignmentOptions.Left, Color.white);
+        var cIconElem = cIcon.AddComponent<LayoutElement>();
+        cIconElem.preferredWidth = 32f;
+
+        var cLabel = CreateText(compassPanel.transform, "Label", "Compass View", 16, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
+        var cLabelElem = cLabel.AddComponent<LayoutElement>();
+        cLabelElem.flexibleWidth = 1f;
+
+        var toggleBtn = CreateButton(compassPanel.transform, "ToggleBtn", "ON", PrimaryAccent, TextPrimary, 32f, 60f);
+
+        // 4. Recommendation Cards
+        void CreateRecCard(Transform parent, string titleStr, string descStr, string badgeStr, Color badgeColor)
         {
-            CreateButton(dirPanel.transform, d + "Btn", d, SurfaceElevated, TextPrimary, 52f);
+            var card = CreatePanel(parent, "RecCard", SurfaceDark);
+            var cardElem = card.AddComponent<LayoutElement>();
+            cardElem.flexibleHeight = 1f;
+            var csfRec = card.AddComponent<ContentSizeFitter>();
+            csfRec.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var cardLayout = card.AddComponent<VerticalLayoutGroup>();
+            cardLayout.padding = new RectOffset(20, 20, 20, 20);
+            cardLayout.spacing = 12;
+            cardLayout.childControlWidth = true;
+            cardLayout.childControlHeight = true;
+            cardLayout.childForceExpandHeight = false;
+
+            var titleRow = CreatePanel(card.transform, "TitleRow", Color.clear);
+            var trElem = titleRow.AddComponent<LayoutElement>();
+            trElem.preferredHeight = 28f;
+            var trLayout = titleRow.AddComponent<HorizontalLayoutGroup>();
+            trLayout.childControlWidth = true;
+
+            var title = CreateText(titleRow.transform, "Title", titleStr, 18, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
+            
+            var badge = CreatePanel(titleRow.transform, "Badge", badgeColor);
+            var bElem = badge.AddComponent<LayoutElement>();
+            bElem.preferredWidth = 120f;
+            var bLayout = badge.AddComponent<HorizontalLayoutGroup>();
+            bLayout.childAlignment = TextAnchor.MiddleCenter;
+            CreateText(badge.transform, "BadgeText", badgeStr, 12, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
+
+            var desc = CreateText(card.transform, "Desc", descStr, 14, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
         }
 
-        // Chat Root Container
-        var chatRoot = CreatePanel(tab.transform, "ChatRoot", Color.clear);
+        CreateRecCard(content.transform, "Bed Placement", "Head pointing South or East promotes restful sleep and positive energy.", "Good", new Color(0.2f, 0.6f, 0.3f, 1f));
+        CreateRecCard(content.transform, "Mirror Position", "Mirrors should not face the bed directly. Consider moving the vanity to the North wall.", "Adjustment", new Color(0.8f, 0.4f, 0.1f, 1f));
+
+        // 5. Main CTA
+        var ctaBtn = CreateButton(content.transform, "CheckLayoutBtn", "Check My Layout", PrimaryAccent, TextPrimary, 48f);
+        var ctaElem = ctaBtn.GetComponent<LayoutElement>();
+        if (ctaElem == null) ctaElem = ctaBtn.AddComponent<LayoutElement>();
+        ctaElem.preferredHeight = 48f;
+
+        // 6. AI Chat Section
+        CreateText(content.transform, "ChatTitle", "Vastu Consultant AI", 22, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
+
+        var chatRoot = CreatePanel(content.transform, "ChatRoot", Color.clear);
         var chatElem = chatRoot.AddComponent<LayoutElement>();
         chatElem.flexibleHeight = 1f;
-
+        chatElem.minHeight = 250f;
         var chatLayout = chatRoot.AddComponent<VerticalLayoutGroup>();
         chatLayout.spacing = 12;
         chatLayout.childControlWidth = true;
         chatLayout.childControlHeight = false;
-
         var chatView = chatRoot.AddComponent<VastuChatView>();
 
-        // Bottom Input Row
-        var inputRow = CreatePanel(tab.transform, "InputRow", SurfaceDark);
+        var inputRow = CreatePanel(content.transform, "InputRow", SurfaceDark);
         var rowElem = inputRow.AddComponent<LayoutElement>();
-        rowElem.preferredHeight = 72f;
-
+        rowElem.preferredHeight = 56f;
         var rowLayout = inputRow.AddComponent<HorizontalLayoutGroup>();
-        rowLayout.padding = new RectOffset(12, 12, 10, 10);
-        rowLayout.spacing = 12;
-        rowLayout.childAlignment = TextAnchor.MiddleCenter;
+        rowLayout.padding = new RectOffset(8, 8, 8, 8);
+        rowLayout.spacing = 8;
         rowLayout.childControlWidth = false;
-        rowLayout.childControlHeight = true;
 
-        var input = CreateInputField(inputRow.transform, "ChatInput", "Ask Vastu assistant about furniture placement...");
+        var input = CreateInputField(inputRow.transform, "ChatInput", "Ask Vastu assistant...");
         var inputElem = input.AddComponent<LayoutElement>();
-        inputElem.preferredWidth = 700f;
+        inputElem.preferredWidth = 220f;
         inputElem.flexibleWidth = 1f;
 
-        var sendBtn = CreateButton(inputRow.transform, "SendBtn", "Send", PrimaryAccent, TextPrimary, 52f, 140f);
+        var sendBtn = CreateButton(inputRow.transform, "SendBtn", "Send", PrimaryAccent, TextPrimary, 40f, 80f);
 
         SetPrivateField(chatView, "contentRoot", chatRoot.transform);
         SetPrivateField(chatView, "inputField", input.GetComponent<TMP_InputField>());
         SetPrivateField(chatView, "sendButton", sendBtn.GetComponent<Button>());
+        
+        var controller = tab.GetComponent<VastuScreenController>();
+        if (controller == null) controller = tab.AddComponent<VastuScreenController>();
+        SetPrivateField(controller, "chatView", chatView);
+        SetPrivateField(controller, "compassToggleBtn", toggleBtn.GetComponent<Button>());
+        SetPrivateField(controller, "checkLayoutBtn", ctaBtn.GetComponent<Button>());
     }
 
     static void WireLibraryTab(GameObject tab)
