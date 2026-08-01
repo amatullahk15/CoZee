@@ -15,18 +15,30 @@ public static class RuntimeUIFactory
     {
         var go = CreatePanel(parent, "ConceptCard", SurfaceDark);
         var cardElem = go.AddComponent<LayoutElement>();
-        cardElem.preferredHeight = 160f;
+        cardElem.flexibleHeight = 1f;
+
+        var csf = go.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         var layout = go.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(20, 20, 16, 16);
         layout.spacing = 10f;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandHeight = false;
 
         var title = CreateText(go.transform, "Title", "Modern Living Room Concept", 22, FontStyles.Bold, TextWhite);
+        var titleElem = title.gameObject.AddComponent<LayoutElement>();
+        titleElem.preferredHeight = 26f;
+
         var prompt = CreateText(go.transform, "Prompt", "Prompt description...", 16, FontStyles.Normal, TextMuted);
+        var promptElem = prompt.gameObject.AddComponent<LayoutElement>();
+        promptElem.flexibleHeight = 1f;
 
         var saveBtn = CreateButton(go.transform, "Save", "💾 Save to Library", PrimaryBlue, TextWhite, 48f);
+        var saveElem = saveBtn.GetComponent<LayoutElement>();
+        if (saveElem == null) saveElem = saveBtn.AddComponent<LayoutElement>();
+        saveElem.preferredHeight = 48f;
 
         var card = go.AddComponent<GeneratedConceptCard>();
         SetField(card, "titleText", title);

@@ -4,8 +4,10 @@ using TMPro;
 
 public class DesignAIController : ScreenBase
 {
-    [SerializeField] TMP_InputField promptInput;
+    [SerializeField] CyclicSelector roomSelector;
+    [SerializeField] BudgetSlider budgetSlider;
     [SerializeField] StyleChipSelector styleSelector;
+    [SerializeField] TMP_InputField promptInput;
     [SerializeField] Button generateButton;
     [SerializeField] ConceptGalleryView gallery;
 
@@ -49,12 +51,18 @@ public class DesignAIController : ScreenBase
 
         if (gallery == null)
             gallery = GetComponentInChildren<ConceptGalleryView>(true);
+            
+        if (roomSelector == null) roomSelector = GetComponentInChildren<CyclicSelector>(true);
+        if (budgetSlider == null) budgetSlider = GetComponentInChildren<BudgetSlider>(true);
+        if (styleSelector == null) styleSelector = GetComponentInChildren<StyleChipSelector>(true);
     }
 
     void Generate()
     {
         string prompt = promptInput != null ? promptInput.text : string.Empty;
         string style = styleSelector != null ? styleSelector.SelectedStyle : "Modern";
+        string room = roomSelector != null ? roomSelector.SelectedOption : "Room";
+        float budget = budgetSlider != null ? budgetSlider.Value : 25000f;
 
         if (string.IsNullOrWhiteSpace(prompt))
         {
@@ -62,8 +70,10 @@ public class DesignAIController : ScreenBase
             return;
         }
 
+        string finalPrompt = $"[{room} - ${budget:N0}] {prompt}";
+
         UIManager.Instance?.ShowLoading(true);
-        DesignAIManager.Instance?.GenerateConcept(prompt, style, _ =>
+        DesignAIManager.Instance?.GenerateConcept(finalPrompt, style, _ =>
         {
             UIManager.Instance?.ShowLoading(false);
             UIManager.Instance?.ShowToast("Concept generated");

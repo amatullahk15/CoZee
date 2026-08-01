@@ -851,60 +851,324 @@ public static class MobileAppSceneBuilder
 
     static void WireDesignAITab(GameObject tab)
     {
-        var layout = tab.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(36, 36, 36, 36);
-        layout.spacing = 20;
+        // 1. Scroll Container for vertical scrolling
+        var scrollGo = CreateUiRoot("ScrollView", tab.transform);
+        Stretch(scrollGo.GetComponent<RectTransform>());
+        var scroll = scrollGo.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Elastic;
+
+        var viewport = CreateUiRoot("Viewport", scrollGo.transform);
+        Stretch(viewport.GetComponent<RectTransform>());
+        viewport.AddComponent<RectMask2D>();
+
+        var content = CreateUiRoot("Content", viewport.transform);
+        var contentRect = content.GetComponent<RectTransform>();
+        contentRect.anchorMin = new Vector2(0f, 1f);
+        contentRect.anchorMax = new Vector2(1f, 1f);
+        contentRect.pivot = new Vector2(0.5f, 1f);
+        contentRect.sizeDelta = new Vector2(0f, 0f);
+
+        var csf = content.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scroll.viewport = viewport.GetComponent<RectTransform>();
+        scroll.content = contentRect;
+
+        var layout = content.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(20, 20, 24, 120);
+        layout.spacing = 16;
         layout.childAlignment = TextAnchor.UpperCenter;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
 
-        // Header Card
-        var header = CreatePanel(tab.transform, "Header", SurfaceDark);
+        // 2. Header
+        var header = CreatePanel(content.transform, "Header", Color.clear);
         var headElem = header.AddComponent<LayoutElement>();
-        headElem.preferredHeight = 110f;
+        headElem.flexibleWidth = 1f;
 
         var headLayout = header.AddComponent<VerticalLayoutGroup>();
-        headLayout.padding = new RectOffset(24, 24, 16, 16);
         headLayout.spacing = 6;
-        headLayout.childAlignment = TextAnchor.MiddleLeft;
+        headLayout.childControlWidth = true;
+        headLayout.childControlHeight = true;
+        headLayout.childForceExpandWidth = true;
+        headLayout.childForceExpandHeight = false;
 
-        CreateText(header.transform, "Title", "AI Room Designer", 32, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
-        CreateText(header.transform, "Sub", "Describe your room vision and generate realistic interior concepts", 18, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
+        CreateText(header.transform, "Title", "Design AI", 32, FontStyles.Bold, TextAlignmentOptions.Left, new Color(0.6f, 0.7f, 1f, 1f));
+        CreateText(header.transform, "Sub", "Transform your space with AI-driven Vastu harmony. Define your parameters and let the sanctuary emerge.", 14, FontStyles.Normal, TextAlignmentOptions.Left, Color.white);
 
-        // Input Card
-        var inputCard = CreatePanel(tab.transform, "InputCard", SurfaceDark);
-        var inputCardElem = inputCard.AddComponent<LayoutElement>();
-        inputCardElem.preferredHeight = 220f;
+        // 3. Form Card
+        var formCard = CreatePanel(content.transform, "FormCard", SurfaceDark);
+        var formElem = formCard.AddComponent<LayoutElement>();
+        formElem.flexibleWidth = 1f;
 
-        var inputCardLayout = inputCard.AddComponent<VerticalLayoutGroup>();
-        inputCardLayout.padding = new RectOffset(20, 20, 20, 20);
-        inputCardLayout.spacing = 16;
-        inputCardLayout.childControlWidth = true;
-        inputCardLayout.childControlHeight = false;
+        var formLayout = formCard.AddComponent<VerticalLayoutGroup>();
+        formLayout.padding = new RectOffset(20, 20, 24, 24);
+        formLayout.spacing = 24;
+        formLayout.childControlWidth = true;
+        formLayout.childControlHeight = true;
+        formLayout.childForceExpandWidth = true;
+        formLayout.childForceExpandHeight = false;
 
-        var prompt = CreateInputField(inputCard.transform, "PromptInput", "Describe your room prompt (e.g. Scandinavian living room with warm lighting)...");
+        // Room Type
+        var rtCol = CreatePanel(formCard.transform, "RoomTypeCol", Color.clear);
+        var rtColElem = rtCol.AddComponent<LayoutElement>();
+        rtColElem.flexibleWidth = 1f;
+        var rtLayout = rtCol.AddComponent<VerticalLayoutGroup>();
+        rtLayout.spacing = 8;
+        rtLayout.childControlWidth = true;
+        rtLayout.childControlHeight = true;
+        rtLayout.childForceExpandWidth = true;
+        rtLayout.childForceExpandHeight = false;
+        CreateText(rtCol.transform, "RTLabel", "ROOM TYPE", 11, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
+        var rtDropdown = CreateButton(rtCol.transform, "RTDropdown", "Living Room                                                  v", SurfaceElevated, Color.white, 48f);
+        var rtDropElem = rtDropdown.GetComponent<LayoutElement>();
+        rtDropElem.flexibleWidth = 1f;
+        var rtText = rtDropdown.GetComponentInChildren<TextMeshProUGUI>();
+        rtText.alignment = TextAlignmentOptions.Left;
+        
+        var rtCycler = rtDropdown.AddComponent<CyclicSelector>();
+        rtCycler.Setup(new string[] { "Living Room", "Bedroom", "Kitchen", "Bathroom", "Office" }, "Living Room");
+
+        // Budget Range
+        var brCol = CreatePanel(formCard.transform, "BudgetRangeCol", Color.clear);
+        var brColElem = brCol.AddComponent<LayoutElement>();
+        brColElem.flexibleWidth = 1f;
+        var brLayout = brCol.AddComponent<VerticalLayoutGroup>();
+        brLayout.spacing = 12;
+        brLayout.childControlWidth = true;
+        brLayout.childControlHeight = true;
+        brLayout.childForceExpandWidth = true;
+        brLayout.childForceExpandHeight = false;
+
+        var brLabels = CreatePanel(brCol.transform, "BRLabels", Color.clear);
+        var brLElem = brLabels.AddComponent<LayoutElement>();
+        brLElem.preferredHeight = 16f;
+        brLElem.flexibleWidth = 1f;
+        var brLLayout = brLabels.AddComponent<HorizontalLayoutGroup>();
+        brLLayout.childControlWidth = true;
+        brLLayout.childControlHeight = true;
+        brLLayout.childForceExpandWidth = false;
+        brLLayout.childForceExpandHeight = false;
+        
+        var budgetTitle = CreateText(brLabels.transform, "Title", "BUDGET RANGE", 11, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
+        var budgetTitleElem = budgetTitle.AddComponent<LayoutElement>();
+        budgetTitleElem.flexibleWidth = 1f;
+        
+        var budgetValue = CreateText(brLabels.transform, "Value", "$25,000", 11, FontStyles.Bold, TextAlignmentOptions.Right, new Color(0.9f, 0.7f, 0.4f, 1f));
+        var budgetValElem = budgetValue.AddComponent<LayoutElement>();
+        budgetValElem.flexibleWidth = 0f;
+        budgetValElem.preferredWidth = 80f;
+
+        var sliderGo = CreatePanel(brCol.transform, "SliderWrapper", SurfaceElevated);
+        var sliderElem = sliderGo.AddComponent<LayoutElement>();
+        sliderElem.preferredHeight = 4f;
+        sliderElem.flexibleWidth = 1f;
+
+        var sliderComp = sliderGo.AddComponent<Slider>();
+        sliderComp.direction = Slider.Direction.LeftToRight;
+        sliderComp.transition = Selectable.Transition.None;
+
+        var fillArea = CreatePanel(sliderGo.transform, "FillArea", Color.clear);
+        var fillRect = fillArea.GetComponent<RectTransform>();
+        Stretch(fillRect);
+
+        var fill = CreatePanel(fillArea.transform, "Fill", new Color(0.7f, 0.8f, 1f, 1f));
+        var fillRt = fill.GetComponent<RectTransform>();
+        Stretch(fillRt);
+        sliderComp.fillRect = fillRt;
+
+        var handleArea = CreatePanel(sliderGo.transform, "HandleSlideArea", Color.clear);
+        var hRect = handleArea.GetComponent<RectTransform>();
+        Stretch(hRect);
+
+        var thumb = CreatePanel(handleArea.transform, "Handle", new Color(0.7f, 0.8f, 1f, 1f));
+        var thumbRect = thumb.GetComponent<RectTransform>();
+        thumbRect.anchorMin = new Vector2(0f, 0.5f);
+        thumbRect.anchorMax = new Vector2(0f, 0.5f);
+        thumbRect.sizeDelta = new Vector2(24, 24); // larger handle
+        thumbRect.anchoredPosition = Vector2.zero;
+        sliderComp.handleRect = thumbRect;
+
+        var budgetSlider = sliderGo.AddComponent<BudgetSlider>();
+        budgetSlider.Setup(sliderComp, budgetValue.GetComponent<TextMeshProUGUI>(), 5000, 100000, 25000);
+
+        var sliderLabels = CreatePanel(brCol.transform, "SliderLabels", Color.clear);
+        var slElem = sliderLabels.AddComponent<LayoutElement>();
+        slElem.preferredHeight = 16f;
+        slElem.flexibleWidth = 1f;
+        var slLayout = sliderLabels.AddComponent<HorizontalLayoutGroup>();
+        slLayout.childControlWidth = true;
+        slLayout.childControlHeight = true;
+        slLayout.childForceExpandWidth = true;
+        slLayout.childForceExpandHeight = false;
+        CreateText(sliderLabels.transform, "Min", "ESSENTIAL", 10, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
+        CreateText(sliderLabels.transform, "Max", "PREMIUM LUXURY", 10, FontStyles.Normal, TextAlignmentOptions.Right, TextMuted);
+
+        // Preferred Style
+        var psCol = CreatePanel(formCard.transform, "PrefStyleCol", Color.clear);
+        var psColElem = psCol.AddComponent<LayoutElement>();
+        psColElem.flexibleWidth = 1f;
+        var psLayout = psCol.AddComponent<VerticalLayoutGroup>();
+        psLayout.spacing = 10;
+        psLayout.childControlWidth = true;
+        psLayout.childControlHeight = true;
+        psLayout.childForceExpandWidth = true;
+        psLayout.childForceExpandHeight = false;
+        CreateText(psCol.transform, "PSLabel", "PREFERRED STYLE", 11, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
+
+        var toggleGroupObj = new GameObject("ToggleGroup");
+        toggleGroupObj.transform.SetParent(psCol.transform, false);
+        var tGroup = toggleGroupObj.AddComponent<ToggleGroup>();
+        tGroup.allowSwitchOff = false;
+
+        var psRow1 = CreatePanel(psCol.transform, "PSRow1", Color.clear);
+        var psr1Elem = psRow1.AddComponent<LayoutElement>();
+        psr1Elem.preferredHeight = 36f;
+        var psr1Layout = psRow1.AddComponent<HorizontalLayoutGroup>();
+        psr1Layout.spacing = 8;
+        psr1Layout.childControlWidth = true;
+        psr1Layout.childControlHeight = true;
+        psr1Layout.childForceExpandWidth = false;
+        psr1Layout.childForceExpandHeight = false;
+
+        var psRow2 = CreatePanel(psCol.transform, "PSRow2", Color.clear);
+        var psr2Elem = psRow2.AddComponent<LayoutElement>();
+        psr2Elem.preferredHeight = 36f;
+        var psr2Layout = psRow2.AddComponent<HorizontalLayoutGroup>();
+        psr2Layout.spacing = 8;
+        psr2Layout.childControlWidth = true;
+        psr2Layout.childControlHeight = true;
+        psr2Layout.childForceExpandWidth = false;
+        psr2Layout.childForceExpandHeight = false;
+
+        Toggle CreateChip(Transform parent, string labelText, float width, bool isOn)
+        {
+            var btn = CreateButton(parent, labelText, labelText, isOn ? new Color(0.7f, 0.8f, 1f, 1f) : SurfaceElevated, isOn ? Color.black : Color.white, 36f, width);
+            UnityEngine.Object.DestroyImmediate(btn.GetComponent<Button>()); // Remove button
+            var toggle = btn.AddComponent<Toggle>();
+            toggle.group = tGroup;
+            toggle.targetGraphic = btn.GetComponent<Image>();
+            
+            // Add script to sync colors based on toggle state
+            var chipUI = btn.AddComponent<ToggleColorSync>();
+            chipUI.Setup(toggle, btn.GetComponentInChildren<TextMeshProUGUI>());
+            toggle.isOn = isOn;
+            return toggle;
+        }
+
+        var t1 = CreateChip(psRow1.transform, "Modern", 100f, true);
+        var t2 = CreateChip(psRow1.transform, "Boho", 90f, false);
+        var t3 = CreateChip(psRow2.transform, "Minimal", 100f, false);
+        var t4 = CreateChip(psRow2.transform, "Industrial", 110f, false);
+        var t5 = CreateChip(psRow2.transform, "Japandi", 100f, false);
+        
+        var styleSelector = psCol.AddComponent<StyleChipSelector>();
+        SetPrivateField(styleSelector, "styleToggles", new Toggle[] { t1, t2, t3, t4, t5 });
+        SetPrivateField(styleSelector, "styleNames", new string[] { "Modern", "Boho", "Minimal", "Industrial", "Japandi" });
+
+        // Custom AI Prompt
+        var aiCol = CreatePanel(formCard.transform, "AIPromptCol", Color.clear);
+        var aiColElem = aiCol.AddComponent<LayoutElement>();
+        aiColElem.flexibleWidth = 1f;
+        var aiLayout = aiCol.AddComponent<VerticalLayoutGroup>();
+        aiLayout.spacing = 8;
+        aiLayout.childControlWidth = true;
+        aiLayout.childControlHeight = true;
+        aiLayout.childForceExpandWidth = true;
+        aiLayout.childForceExpandHeight = false;
+        CreateText(aiCol.transform, "AILabel", "CUSTOM AI PROMPT", 11, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
+        
+        var prompt = CreateInputField(aiCol.transform, "PromptInput", "Describe specific Vastu requirements or material preferences (e.g. 'Ensure the workstation faces North-East with natural teak wood finishes...')");
         var promptElem = prompt.AddComponent<LayoutElement>();
-        promptElem.preferredHeight = 90f;
+        promptElem.preferredHeight = 100f;
+        promptElem.flexibleWidth = 1f;
 
-        var genBtn = CreateButton(inputCard.transform, "GenerateBtn", "✨ Generate Concept", PrimaryAccent, TextPrimary, 64f);
+        // Vastu Optimizer Status
+        var vastuCard = CreatePanel(formCard.transform, "VastuInfoCard", new Color(0.18f, 0.16f, 0.12f, 1f));
+        var vCardElem = vastuCard.AddComponent<LayoutElement>();
+        vCardElem.flexibleWidth = 1f;
+        var vCardLayout = vastuCard.AddComponent<HorizontalLayoutGroup>();
+        vCardLayout.padding = new RectOffset(16, 16, 16, 16);
+        vCardLayout.spacing = 16;
+        vCardLayout.childControlWidth = true;
+        vCardLayout.childControlHeight = true;
+        vCardLayout.childForceExpandWidth = false;
+        vCardLayout.childForceExpandHeight = false;
 
-        // Concept Gallery View Root
-        var galleryRoot = CreatePanel(tab.transform, "GalleryRoot", Color.clear);
-        var galElem = galleryRoot.AddComponent<LayoutElement>();
-        galElem.flexibleHeight = 1f;
+        var vIcon = CreateText(vastuCard.transform, "Icon", "🏯", 28, FontStyles.Normal, TextAlignmentOptions.Center, new Color(0.9f, 0.7f, 0.4f, 1f));
+        var vIconElem = vIcon.AddComponent<LayoutElement>();
+        vIconElem.preferredWidth = 32f;
+        vIconElem.flexibleWidth = 0f;
 
-        var galLayout = galleryRoot.AddComponent<VerticalLayoutGroup>();
-        galLayout.spacing = 16;
-        galLayout.childControlWidth = true;
-        galLayout.childControlHeight = false;
+        var vTextCol = CreatePanel(vastuCard.transform, "TextCol", Color.clear);
+        var vTextColElem = vTextCol.AddComponent<LayoutElement>();
+        vTextColElem.flexibleWidth = 1f;
+        var vTextLayout = vTextCol.AddComponent<VerticalLayoutGroup>();
+        vTextLayout.spacing = 2;
+        vTextLayout.childControlWidth = true;
+        vTextLayout.childControlHeight = true;
+        vTextLayout.childForceExpandWidth = true;
+        vTextLayout.childForceExpandHeight = false;
+        CreateText(vTextCol.transform, "VTitle", "VASTU OPTIMIZER ACTIVE", 11, FontStyles.Bold, TextAlignmentOptions.Left, new Color(0.9f, 0.7f, 0.4f, 1f));
+        CreateText(vTextCol.transform, "VSub", "The AI will automatically prioritize five-element balance based on your selections.", 11, FontStyles.Normal, TextAlignmentOptions.Left, Color.white);
 
-        var gallery = galleryRoot.AddComponent<ConceptGalleryView>();
-        SetPrivateField(gallery, "contentRoot", galleryRoot.transform);
+        // Generate Button
+        var genBtn = CreateButton(formCard.transform, "GenerateBtn", "✨ Generate Design", new Color(0.6f, 0.7f, 1f, 1f), Color.black, 52f);
+        var genBtnElem = genBtn.GetComponent<LayoutElement>();
+        genBtnElem.flexibleWidth = 1f;
 
+        // 4. Recent Creations
+        var recentCol = CreatePanel(content.transform, "RecentCol", Color.clear);
+        var recentColElem = recentCol.AddComponent<LayoutElement>();
+        recentColElem.flexibleWidth = 1f;
+        var recentLayout = recentCol.AddComponent<VerticalLayoutGroup>();
+        recentLayout.spacing = 16;
+        recentLayout.childControlWidth = true;
+        recentLayout.childControlHeight = true;
+        recentLayout.childForceExpandWidth = true;
+        recentLayout.childForceExpandHeight = false;
+
+        var recHead = CreatePanel(recentCol.transform, "RecHead", Color.clear);
+        var rhElem = recHead.AddComponent<LayoutElement>();
+        rhElem.preferredHeight = 24f;
+        var rhLayout = recHead.AddComponent<HorizontalLayoutGroup>();
+        rhLayout.childControlWidth = true;
+        rhLayout.childControlHeight = true;
+        rhLayout.childForceExpandWidth = false;
+        rhLayout.childForceExpandHeight = false;
+        var rhTitle = CreateText(recHead.transform, "RTitle", "Recent Creations", 18, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
+        var rhTitleElem = rhTitle.AddComponent<LayoutElement>();
+        rhTitleElem.flexibleWidth = 1f;
+        var rhLink = CreateText(recHead.transform, "RLink", "View All Library", 12, FontStyles.Bold, TextAlignmentOptions.Right, Color.white);
+        var rhLinkElem = rhLink.AddComponent<LayoutElement>();
+        rhLinkElem.flexibleWidth = 0f;
+        rhLinkElem.preferredWidth = 120f;
+
+        // List (Vertical stacking for generated cards)
+        var gridRoot = CreatePanel(recentCol.transform, "GridRoot", Color.clear);
+        var gridElem = gridRoot.AddComponent<LayoutElement>();
+        gridElem.flexibleWidth = 1f;
+        var gridLayout = gridRoot.AddComponent<VerticalLayoutGroup>();
+        gridLayout.spacing = 16f;
+        gridLayout.childControlWidth = true;
+        gridLayout.childControlHeight = true;
+        gridLayout.childForceExpandHeight = false;
+
+        // 5. Connect controller components
         var ctrl = tab.GetComponent<DesignAIController>();
+        var galleryView = scrollGo.AddComponent<ConceptGalleryView>(); // mock for controller dependency
+        SetPrivateField(galleryView, "contentRoot", gridRoot.transform);
+
+        SetPrivateField(ctrl, "roomSelector", rtCycler);
+        SetPrivateField(ctrl, "budgetSlider", budgetSlider);
+        SetPrivateField(ctrl, "styleSelector", styleSelector);
         SetPrivateField(ctrl, "promptInput", prompt.GetComponent<TMP_InputField>());
         SetPrivateField(ctrl, "generateButton", genBtn.GetComponent<Button>());
-        SetPrivateField(ctrl, "gallery", gallery);
+        SetPrivateField(ctrl, "gallery", galleryView);
     }
 
     static void WireVastuTab(GameObject tab)
