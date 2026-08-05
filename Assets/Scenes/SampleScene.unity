@@ -936,6 +936,73 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0.01, z: 0}
+--- !u!1 &259715463
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 259715465}
+  - component: {fileID: 259715464}
+  - component: {fileID: 259715466}
+  m_Layer: 0
+  m_Name: ARRenovisionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &259715464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259715463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3755cf0b8bece4b488c6d7f7109d1a73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  modelAsset: {fileID: 5022602860645237092, guid: 67263d6a73440884c858c4f91ef30aca, type: 3}
+  labelsAsset: {fileID: 4900000, guid: 433bb88455c6d28459a1963ba2e50b39, type: 3}
+  arCameraManager: {fileID: 1462974702}
+  confidenceThreshold: 0.45
+  iouThreshold: 0.45
+  inferenceIntervalSeconds: 0.75
+  backendType: 512
+--- !u!4 &259715465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259715463}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.2475002, y: 1.4500002, z: 0.31403214}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &259715466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259715463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df2e1f4fb97cd9449fdd9be9fca166b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  renovisionManager: {fileID: 259715464}
+  overlayCanvasRect: {fileID: 223974230}
+  labelFontSize: 14
 --- !u!1 &668258570
 GameObject:
   m_ObjectHideFlags: 0
@@ -3461,3 +3528,4 @@ SceneRoots:
   - {fileID: 223974230}
   - {fileID: 782628378}
   - {fileID: 230031265}
+  - {fileID: 259715465}

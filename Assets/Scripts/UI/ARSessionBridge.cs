@@ -8,10 +8,32 @@ public class ARSessionBridge : MonoBehaviour
     public int TapCount => roomMeasurement != null ? roomMeasurement.tapCount : 0;
     public bool IsMeasurementComplete => TapCount >= 3;
 
+    void Start()
+    {
+        EnsureRenovisionComponents();
+    }
+
     void Update()
     {
         if (roomMeasurement == null)
             roomMeasurement = FindObjectOfType<RoomMeasurement>();
+    }
+
+    void EnsureRenovisionComponents()
+    {
+        var detector = FindObjectOfType<RenoVisionDetector>();
+        if (detector == null)
+        {
+            var detectorObj = new GameObject("RenoVisionDetector");
+            detectorObj.AddComponent<RenoVisionDetector>();
+        }
+
+        var labeler = FindObjectOfType<FurnitureLabeler>();
+        if (labeler == null)
+        {
+            var labelerObj = new GameObject("FurnitureLabeler");
+            labelerObj.AddComponent<FurnitureLabeler>();
+        }
     }
 
     public string GetStatusText()
