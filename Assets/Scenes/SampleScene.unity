@@ -1653,6 +1653,7 @@ GameObject:
   - component: {fileID: 1210460924}
   - component: {fileID: 1210460925}
   - component: {fileID: 1210460926}
+  - component: {fileID: 1210460927}
   m_Layer: 0
   m_Name: AR Session Origin
   m_TagString: Untagged
@@ -1808,6 +1809,19 @@ MonoBehaviour:
   placeObject: {fileID: 1210460917}
   sofaPrefab: {fileID: 3052053514497355931, guid: fca3de5809b8e9b47bf5ee7b60318aeb, type: 3}
   wardrobePrefab: {fileID: 4207778702959335747, guid: d4f9b18aeb43c8b49881fb96f0220e2a, type: 3}
+--- !u!114 &1210460927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210460916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53c2b735689a71445a96d161c2682457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  planeManager: {fileID: 1210460919}
 --- !u!1 &1210854974
 GameObject:
   m_ObjectHideFlags: 0
