@@ -18,6 +18,7 @@ public class HomeDashboardController : ScreenBase
     {
         EnsureQuickActions();
         EnsureTextColors();
+        WireScanButtons();
         RefreshRecent();
     }
 
@@ -25,6 +26,7 @@ public class HomeDashboardController : ScreenBase
     {
         EnsureQuickActions();
         EnsureTextColors();
+        WireScanButtons();
     }
 
     void EnsureTextColors()
@@ -56,6 +58,38 @@ public class HomeDashboardController : ScreenBase
         designAction?.SetLabel("AI Design");
         vastuAction?.SetLabel("Vastu Check");
         savedAction?.SetLabel("Saved Rooms");
+    }
+
+    void WireScanButtons()
+    {
+        Button[] buttons = GetComponentsInChildren<Button>(true);
+        foreach (Button btn in buttons)
+        {
+            if (btn == null) continue;
+            string n = btn.gameObject.name.ToLowerInvariant();
+            if (n.Contains("scanpill") || n.Contains("herobanner") || n.Contains("startscan") || n.Contains("scanaction"))
+            {
+                btn.onClick.RemoveListener(OnScanClicked);
+                btn.onClick.AddListener(OnScanClicked);
+            }
+            else if (n.Contains("viewall"))
+            {
+                btn.onClick.RemoveListener(OnViewAllClicked);
+                btn.onClick.AddListener(OnViewAllClicked);
+            }
+        }
+    }
+
+    void OnScanClicked()
+    {
+        AudioManager.Instance?.PlayClick();
+        NavigationManager.Instance?.SelectTab(AppTab.ScanAR);
+    }
+
+    void OnViewAllClicked()
+    {
+        AudioManager.Instance?.PlayClick();
+        NavigationManager.Instance?.SelectTab(AppTab.Library);
     }
 
     void RefreshRecent()

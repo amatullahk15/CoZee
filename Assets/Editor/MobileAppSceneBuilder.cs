@@ -374,38 +374,65 @@ public static class MobileAppSceneBuilder
             vastu.GetComponent<ScreenBase>(),
             library.GetComponent<ScreenBase>()
         });
-
         // Bottom Navigation Bar
-        var bottomNav = CreatePanel(safeArea.transform, "BottomNav", SurfaceDark);
+        var bottomNav = CreatePanel(safeArea.transform, "BottomNav", BgDark);
         var bottomRect = bottomNav.GetComponent<RectTransform>();
         bottomRect.anchorMin = new Vector2(0, 0);
         bottomRect.anchorMax = new Vector2(1, 0);
         bottomRect.pivot = new Vector2(0.5f, 0);
-        bottomRect.sizeDelta = new Vector2(0, 90);
+        bottomRect.sizeDelta = new Vector2(0, 84);
         bottomRect.anchoredPosition = Vector2.zero;
 
         var bottomLayout = bottomNav.AddComponent<HorizontalLayoutGroup>();
-        bottomLayout.padding = new RectOffset(16, 16, 12, 12);
-        bottomLayout.spacing = 8;
+        bottomLayout.padding = new RectOffset(0, 0, 0, 0);
+        bottomLayout.spacing = 0;
         bottomLayout.childAlignment = TextAnchor.MiddleCenter;
         bottomLayout.childControlWidth = true;
         bottomLayout.childControlHeight = true;
-        bottomLayout.childForceExpandHeight = false;
+        bottomLayout.childForceExpandHeight = true;
         bottomLayout.childForceExpandWidth = true;
 
         var navBar = bottomNav.AddComponent<BottomNavBar>();
         var tabs = new BottomNavBar.TabButton[5];
         string[] labels = { "Home", "Scan AR", "Design AI", "Vastu", "Library" };
-        string[] icons = { "🏠", "📐", "✨", "🧭", "📚" };
+        string[] icons = { "HM", "AR", "AI", "VS", "LIB" };
+
+        Color[] normals = new Color[]
+        {
+            new Color(0.086f, 0.420f, 0.408f, 1f), // Home: #166B68 Teal
+            new Color(0.141f, 0.341f, 0.773f, 1f), // Scan AR: #2457C5 Blue
+            new Color(0.773f, 0.231f, 0.231f, 1f), // Design AI: #C53B3B Red
+            new Color(0.710f, 0.294f, 0.796f, 1f), // Vastu: #B54BCB Purple
+            new Color(0.235f, 0.478f, 0.176f, 1f)  // Library: #3C7A2D Green
+        };
+
+        Color[] actives = new Color[]
+        {
+            new Color(0.110f, 0.522f, 0.506f, 1f),
+            new Color(0.188f, 0.427f, 0.941f, 1f),
+            new Color(0.878f, 0.275f, 0.275f, 1f),
+            new Color(0.784f, 0.353f, 0.878f, 1f),
+            new Color(0.282f, 0.580f, 0.212f, 1f)
+        };
 
         for (int i = 0; i < 5; i++)
         {
-            var tabBtn = CreateNavTabButton(bottomNav.transform, labels[i] + "Btn", labels[i], icons[i]);
+            var tabBtn = CreateNavTabButton(bottomNav.transform, labels[i] + "Btn", labels[i], icons[i], normals[i]);
+            var btnImg = tabBtn.GetComponent<Image>();
+            var indImg = tabBtn.transform.Find("ActiveIndicator")?.GetComponent<Image>();
+            var iconTmp = tabBtn.transform.Find("Icon")?.GetComponent<TextMeshProUGUI>();
+            var labelTmp = tabBtn.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
+
             tabs[i] = new BottomNavBar.TabButton
             {
                 button = tabBtn.GetComponent<Button>(),
-                highlight = tabBtn.GetComponent<Image>(),
-                tab = (AppTab)i
+                buttonImage = btnImg,
+                activeIndicator = indImg,
+                iconText = iconTmp,
+                labelText = labelTmp,
+                tab = (AppTab)i,
+                normalColor = normals[i],
+                activeColor = actives[i]
             };
         }
         SetPrivateField(navBar, "tabs", tabs);
@@ -433,26 +460,39 @@ public static class MobileAppSceneBuilder
         EditorSceneManager.SaveScene(scene, UiScenePath + "MainShell.unity");
     }
 
-    static GameObject CreateNavTabButton(Transform parent, string name, string label, string icon)
+    static GameObject CreateNavTabButton(Transform parent, string name, string label, string icon, Color bgColor)
     {
-        var btn = CreatePanel(parent, name, SurfaceDark);
+        var btn = CreatePanel(parent, name, bgColor);
         btn.AddComponent<Button>();
 
+        var layoutElem = btn.AddComponent<LayoutElement>();
+        layoutElem.flexibleWidth = 1f;
+
         var layout = btn.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(4, 4, 8, 8);
+        layout.padding = new RectOffset(2, 2, 6, 6);
         layout.spacing = 4;
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.childControlWidth = true;
-        layout.childControlHeight = true;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
 
-        var iconText = CreateText(btn.transform, "Icon", icon, 32, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
-        var iconElem = iconText.AddComponent<LayoutElement>();
-        iconElem.preferredHeight = 40f;
+        // Top Active Line Indicator
+        var indicator = CreatePanel(btn.transform, "ActiveIndicator", Color.white);
+        var indElem = indicator.AddComponent<LayoutElement>();
+        indElem.preferredHeight = 4f;
+        indElem.flexibleWidth = 1f;
+        indicator.SetActive(false);
 
-        var labelText = CreateText(btn.transform, "Label", label, 16, FontStyles.Bold, TextAlignmentOptions.Center, TextMuted);
-        var labelElem = labelText.AddComponent<LayoutElement>();
-        labelElem.preferredHeight = 24f;
+        // Icon Text (HM, AR, AI, VS, LIB)
+        var iconTextGo = CreateText(btn.transform, "Icon", icon, 18, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
+        var iconElem = iconTextGo.GetComponent<LayoutElement>();
+        if (iconElem != null) iconElem.preferredHeight = 22f;
+
+        // Label Text (Home, Scan AR, Design AI, Vastu, Library)
+        var labelTextGo = CreateText(btn.transform, "Label", label, 13, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
+        var labelElem = labelTextGo.GetComponent<LayoutElement>();
+        if (labelElem != null) labelElem.preferredHeight = 20f;
 
         return btn;
     }
@@ -513,7 +553,7 @@ public static class MobileAppSceneBuilder
         avElem.preferredWidth = 48f;
         avElem.preferredHeight = 48f;
         avElem.flexibleWidth = 0f;
-        var avText = CreateText(avatar.transform, "AvText", "👤", 24, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
+        var avText = CreateText(avatar.transform, "AvText", "A", 22, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
         Stretch(avText.GetComponent<RectTransform>());
 
         // User Text Stack
@@ -538,11 +578,15 @@ public static class MobileAppSceneBuilder
         bellElem.preferredWidth = 44f;
         bellElem.preferredHeight = 44f;
         bellElem.flexibleWidth = 0f;
-        var bellText = CreateText(bellBtn.transform, "BellText", "🔔", 20, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
+        var bellText = CreateText(bellBtn.transform, "BellText", "N", 20, FontStyles.Bold, TextAlignmentOptions.Center, Color.white);
         Stretch(bellText.GetComponent<RectTransform>());
 
         // 2. Hero Banner Card ("Start New Scan")
         var heroCard = CreatePanel(content.transform, "HeroBannerCard", SurfaceDark);
+        var heroBtn = heroCard.AddComponent<Button>();
+        heroBtn.transition = Selectable.Transition.None;
+        heroBtn.onClick.AddListener(() => NavigationManager.Instance?.SelectTab(AppTab.ScanAR));
+
         var heroElem = heroCard.AddComponent<LayoutElement>();
         heroElem.preferredHeight = 170f;
         heroElem.flexibleWidth = 1f;
@@ -571,7 +615,7 @@ public static class MobileAppSceneBuilder
         CreateText(heroTextCol.transform, "HeroTitle", "Start New\nScan", 26, FontStyles.Bold, TextAlignmentOptions.Left, Color.white);
         CreateText(heroTextCol.transform, "HeroSub", "Analyze your space for Vastu harmony", 14, FontStyles.Normal, TextAlignmentOptions.Left, TextMuted);
 
-        var scanPillBtn = CreateButton(heroCard.transform, "ScanPillBtn", "🔲 Scan Room", new Color(0.58f, 0.77f, 0.99f, 1f), new Color(0.12f, 0.23f, 0.54f, 1f), 48f, 140f);
+        var scanPillBtn = CreateButton(heroCard.transform, "ScanPillBtn", "Scan Room", new Color(0.58f, 0.77f, 0.99f, 1f), new Color(0.12f, 0.23f, 0.54f, 1f), 48f, 140f);
         var pillElem = scanPillBtn.GetComponent<LayoutElement>();
         pillElem.flexibleWidth = 0f;
 
@@ -605,8 +649,8 @@ public static class MobileAppSceneBuilder
         r1Layout.childForceExpandWidth = false;
         r1Layout.childForceExpandHeight = false;
 
-        var scan = CreateQuickAction(row1.transform, "ScanAction", "Scan Room", "MEASURE & MAP", "📐", AppTab.ScanAR);
-        var design = CreateQuickAction(row1.transform, "DesignAction", "AI Design", "PROFOUND REVAMP", "✨", AppTab.DesignAI);
+        var scan = CreateQuickAction(row1.transform, "ScanAction", "Scan Room", "MEASURE & MAP", "AR", AppTab.ScanAR);
+        var design = CreateQuickAction(row1.transform, "DesignAction", "AI Design", "PROFOUND REVAMP", "AI", AppTab.DesignAI);
 
         // Row 2
         var row2 = CreatePanel(actionGrid.transform, "Row2", Color.clear);
@@ -620,8 +664,8 @@ public static class MobileAppSceneBuilder
         r2Layout.childForceExpandWidth = false;
         r2Layout.childForceExpandHeight = false;
 
-        var vastu = CreateQuickAction(row2.transform, "VastuAction", "Vastu Check", "ENERGY FLOW", "🧭", AppTab.Vastu);
-        var saved = CreateQuickAction(row2.transform, "SavedAction", "Library", "PAST PROJECTS", "📚", AppTab.Library);
+        var vastu = CreateQuickAction(row2.transform, "VastuAction", "Vastu Check", "ENERGY FLOW", "VS", AppTab.Vastu);
+        var saved = CreateQuickAction(row2.transform, "SavedAction", "Library", "PAST PROJECTS", "LIB", AppTab.Library);
 
         // Wire Scan Pill button too
         var scanPillComp = scanPillBtn.GetComponent<Button>();
@@ -648,6 +692,9 @@ public static class MobileAppSceneBuilder
         recentTitleElem.flexibleWidth = 1f;
 
         var viewAllBtn = CreateText(projHeaderRow.transform, "ViewAllBtn", "View all", 15, FontStyles.Bold, TextAlignmentOptions.Right, PrimaryAccent);
+        var viewAllComp = viewAllBtn.AddComponent<Button>();
+        viewAllComp.transition = Selectable.Transition.None;
+        viewAllComp.onClick.AddListener(() => NavigationManager.Instance?.SelectTab(AppTab.Library));
         var viewAllElem = viewAllBtn.AddComponent<LayoutElement>();
         viewAllElem.preferredWidth = 100f;
         viewAllElem.flexibleWidth = 0f;
@@ -1492,6 +1539,10 @@ public static class MobileAppSceneBuilder
         var go = CreateUiRoot(name, parent);
         var img = go.AddComponent<Image>();
         img.color = color;
+        if (color.a <= 0.01f)
+        {
+            img.raycastTarget = false;
+        }
         return go;
     }
 

@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using TMPro;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -16,33 +19,39 @@ public class PlaceObject : MonoBehaviour
 
     void Start()
     {
-        raycastManager = GetComponent<ARRaycastManager>();
+        EnsureComponents();
+    }
+
+    void EnsureComponents()
+    {
+        if (raycastManager == null)
+            raycastManager = GetComponent<ARRaycastManager>() ?? FindObjectOfType<ARRaycastManager>();
+
+        if (roomMeasurement == null)
+            roomMeasurement = GetComponent<RoomMeasurement>() ?? FindObjectOfType<RoomMeasurement>();
     }
 
     void Update()
     {
-        if (roomMeasurement == null || objectPrefab == null || raycastManager == null || Camera.main == null)
-            return;
+        EnsureComponents();
 
-        // First complete room measurement
-        if (roomMeasurement.tapCount < 3)
+        // First complete room measurement if active
+        if (roomMeasurement != null && roomMeasurement.tapCount < 3)
             return;
 
         if (Input.touchCount == 0)
             return;
 
         Touch touch = Input.GetTouch(0);
-        if (UnityEngine.EventSystems.EventSystem.current
-    .IsPointerOverGameObject(touch.fingerId))
-        {
+
+        Camera cam = Camera.main ?? Camera.current;
+        if (cam == null)
             return;
-        }
 
-        Ray ray = Camera.main.ScreenPointToRay(touch.position);
-
+        Ray ray = cam.ScreenPointToRay(touch.position);
         RaycastHit hitObject;
 
-        if (Physics.Raycast(ray, out hitObject))
+        if (Physics.Raycast(ray, out hitObject) && hitObject.transform != null && hitObject.transform.CompareTag("Furniture"))
         {
             // User touched existing furniture
             return;
@@ -51,33 +60,46 @@ public class PlaceObject : MonoBehaviour
         if (touch.phase != TouchPhase.Began)
             return;
 
-        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
+        // Ensure objectPrefab is assigned and is not an AR Default Plane prefab
+        if (objectPrefab != null && objectPrefab.name.Contains("Default Plane"))
+        {
+            objectPrefab = null;
+        }
+
+        if (objectPrefab == null)
+        {
+            var selector = FindObjectOfType<FurnitureSelector>();
+            if (selector != null)
+            {
+                selector.EnsurePrefabs();
+                if (selector.sofaPrefab != null) objectPrefab = selector.sofaPrefab;
+                else if (selector.wardrobePrefab != null) objectPrefab = selector.wardrobePrefab;
+            }
+        }
+
+        if (objectPrefab == null)
+            return;
+
+        TrackableType trackableTypes = TrackableType.PlaneWithinPolygon | TrackableType.PlaneEstimated | TrackableType.FeaturePoint;
+
+        if (raycastManager != null && raycastManager.Raycast(touch.position, hits, trackableTypes))
         {
             Pose hitPose = hits[0].pose;
 
-            Collider[] nearbyObjects = Physics.OverlapSphere(hitPose.position, 0.5f);
-
-            int furnitureCount = 0;
-
-            foreach (Collider collider in nearbyObjects)
-            {
-                if (collider.CompareTag("Furniture"))
-                {
-                    furnitureCount++;
-                }
-            }
-
-            if (furnitureCount > 0)
-            {
-                return;
-            }
-
             GameObject obj = Instantiate(objectPrefab, hitPose.position, hitPose.rotation);
+            obj.SetActive(true);
+            obj.tag = "Furniture";
 
-            // Smaller cube size
-            obj.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            if (obj.transform.localScale == Vector3.one)
+            {
+                obj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+            }
 
-            // Random color
+            if (obj.GetComponent<Collider>() == null)
+            {
+                obj.AddComponent<BoxCollider>();
+            }
+
             Renderer renderer = obj.GetComponent<Renderer>();
             if (renderer != null && renderer.material != null)
             {
@@ -88,5 +110,33 @@ public class PlaceObject : MonoBehaviour
                 );
             }
         }
+    }
+
+    bool IsTouchOverInteractiveUI(Touch touch)
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        PointerEventData eventData = new PointerEventData(EventSystem.current);
+        eventData.position = touch.position;
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject == null) continue;
+
+            // Only block placement if touch is directly on interactive UI components
+            if (result.gameObject.GetComponentInParent<Button>() != null ||
+                result.gameObject.GetComponentInParent<Slider>() != null ||
+                result.gameObject.GetComponentInParent<Toggle>() != null ||
+                result.gameObject.GetComponentInParent<TMP_Dropdown>() != null ||
+                result.gameObject.GetComponentInParent<BottomNavBar>() != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
