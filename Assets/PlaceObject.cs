@@ -35,8 +35,8 @@ public class PlaceObject : MonoBehaviour
     {
         EnsureComponents();
 
-        // First complete room measurement if active
-        if (roomMeasurement != null && roomMeasurement.tapCount < 3)
+        // First complete at least one controlled surface scan before placing furniture.
+        if (roomMeasurement != null && !roomMeasurement.CanPlaceFurniture)
             return;
 
         if (Input.touchCount == 0)

@@ -6,14 +6,23 @@ public class ARSessionBridge : MonoBehaviour
     RoomMeasurement roomMeasurement;
 
     public int TapCount => roomMeasurement != null ? roomMeasurement.tapCount : 0;
-    public bool IsMeasurementComplete => TapCount >= 3;
+    public bool IsMeasurementComplete => roomMeasurement != null && roomMeasurement.HasCompletedScan;
+    public bool IsScanning => roomMeasurement != null && roomMeasurement.IsScanning;
+    public bool CanStartScan => roomMeasurement != null && roomMeasurement.CanStartScan();
+    public bool CanPlaceFurniture => roomMeasurement != null && roomMeasurement.CanPlaceFurniture;
 
     void Start()
     {
         EnsureRenovisionComponents();
+        EnsureMeasurement();
     }
 
     void Update()
+    {
+        EnsureMeasurement();
+    }
+
+    void EnsureMeasurement()
     {
         if (roomMeasurement == null)
             roomMeasurement = FindObjectOfType<RoomMeasurement>();
@@ -41,12 +50,45 @@ public class ARSessionBridge : MonoBehaviour
         if (roomMeasurement == null)
             return "Starting AR session…";
 
-        switch (roomMeasurement.tapCount)
-        {
-            case 0: return "Tap first corner";
-            case 1: return "Tap second corner";
-            case 2: return "Tap third corner";
-            default: return "Room measured — tap to place furniture";
-        }
+        return roomMeasurement.GetStatusText();
+    }
+
+    public string GetDimensionsText()
+    {
+        if (roomMeasurement == null)
+            return "Searching for surfaces...";
+
+        return roomMeasurement.GetMeasurementsText();
+    }
+
+    public bool StartScan()
+    {
+        if (roomMeasurement == null)
+            return false;
+
+        roomMeasurement.StartScan();
+        return roomMeasurement.IsScanning;
+    }
+
+    public bool StopScan()
+    {
+        if (roomMeasurement == null)
+            return false;
+
+        return roomMeasurement.StopScan();
+    }
+
+    public string GetPrimaryActionLabel()
+    {
+        if (roomMeasurement == null)
+            return "Searching...";
+
+        if (roomMeasurement.IsScanning)
+            return "Stop Scan";
+
+        if (roomMeasurement.HasCompletedScan && !roomMeasurement.CanStartScan())
+            return "Save Room";
+
+        return roomMeasurement.HasCompletedScan ? "Scan Next Surface" : "Start Scan";
     }
 }
