@@ -35,7 +35,14 @@ public class LibraryItemCard : MonoBehaviour
             titleText.text = item.title;
 
         if (categoryText != null)
-            categoryText.text = item.category;
+        {
+            if (item.roomScanData != null && !string.IsNullOrWhiteSpace(item.roomScanData.summary))
+                categoryText.text = item.roomScanData.summary;
+            else if (!string.IsNullOrWhiteSpace(item.detailsText))
+                categoryText.text = item.detailsText;
+            else
+                categoryText.text = item.category;
+        }
 
         favoriteToggle?.Bind(item.id, item.isFavorite);
     }

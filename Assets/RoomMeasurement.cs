@@ -5,16 +5,6 @@ using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
-[Serializable]
-public class ScannedSurfaceRecord
-{
-    public string label;
-    public string surfaceType;
-    public float primaryDimensionMeters;
-    public float secondaryDimensionMeters;
-    public float areaSquareMeters;
-}
-
 public class RoomMeasurement : MonoBehaviour
 {
     public TextMeshProUGUI distanceText;
@@ -155,6 +145,66 @@ public class RoomMeasurement : MonoBehaviour
         }
 
         return string.Join("\n", lines);
+    }
+
+    public List<ScannedSurfaceRecord> CreateScanHistorySnapshot()
+    {
+        var snapshot = new List<ScannedSurfaceRecord>(scanHistory.Count);
+        foreach (ScannedSurfaceRecord record in scanHistory)
+        {
+            snapshot.Add(new ScannedSurfaceRecord
+            {
+                label = record.label,
+                surfaceType = record.surfaceType,
+                primaryDimensionMeters = record.primaryDimensionMeters,
+                secondaryDimensionMeters = record.secondaryDimensionMeters,
+                areaSquareMeters = record.areaSquareMeters
+            });
+        }
+
+        return snapshot;
+    }
+
+    public RoomScanData BuildRoomScanData(string roomId = null)
+    {
+        var data = new RoomScanData();
+        data.roomId = string.IsNullOrEmpty(roomId) ? Guid.NewGuid().ToString() : roomId;
+        data.surfaces = CreateScanHistorySnapshot();
+
+        foreach (ScannedSurfaceRecord record in data.surfaces)
+        {
+            if (string.Equals(record.surfaceType, "Wall", StringComparison.OrdinalIgnoreCase))
+            {
+                data.wallCount++;
+                data.totalWallAreaSquareMeters += record.areaSquareMeters;
+            }
+            else if (string.Equals(record.surfaceType, "Floor", StringComparison.OrdinalIgnoreCase))
+            {
+                data.floorCount++;
+                data.totalFloorAreaSquareMeters += record.areaSquareMeters;
+            }
+        }
+
+        data.summary = BuildRoomScanSummary(data);
+        return data;
+    }
+
+    static string BuildRoomScanSummary(RoomScanData data)
+    {
+        if (data == null)
+            return "No surfaces scanned";
+
+        var parts = new List<string>(3);
+        if (data.wallCount > 0)
+            parts.Add($"{data.wallCount} wall{(data.wallCount == 1 ? "" : "s")}");
+        if (data.floorCount > 0)
+            parts.Add($"{data.floorCount} floor{(data.floorCount == 1 ? "" : "s")}");
+
+        float totalArea = data.totalWallAreaSquareMeters + data.totalFloorAreaSquareMeters;
+        if (totalArea > 0f)
+            parts.Add($"{totalArea:F2} m2");
+
+        return parts.Count > 0 ? string.Join(" • ", parts) : "No surfaces scanned";
     }
 
     ARPlane GetBestVisiblePlane()

@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class ARSessionBridge : MonoBehaviour
 {
@@ -59,6 +60,22 @@ public class ARSessionBridge : MonoBehaviour
             return "Searching for surfaces...";
 
         return roomMeasurement.GetMeasurementsText();
+    }
+
+    public RoomScanData BuildRoomScanData()
+    {
+        if (roomMeasurement == null || !roomMeasurement.HasCompletedScan)
+            return null;
+
+        return roomMeasurement.BuildRoomScanData();
+    }
+
+    public List<ScannedSurfaceRecord> CreateScanHistorySnapshot()
+    {
+        if (roomMeasurement == null)
+            return new List<ScannedSurfaceRecord>();
+
+        return roomMeasurement.CreateScanHistorySnapshot();
     }
 
     public bool StartScan()

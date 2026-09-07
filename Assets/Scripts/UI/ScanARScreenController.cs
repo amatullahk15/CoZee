@@ -13,6 +13,8 @@ public class ScanARScreenController : ScreenBase
     [SerializeField] ARSessionBridge bridge;
 
     Image shellBgImage;
+    Button scanActionButton;
+    TextMeshProUGUI scanActionButtonLabel;
     TextMeshProUGUI saveRoomButtonLabel;
     Color originalBgColor = new Color(0.06f, 0.09f, 0.16f, 1f);
     bool arLoaded;
@@ -32,16 +34,28 @@ public class ScanARScreenController : ScreenBase
 
     void Start()
     {
+        EnsureActionButtons();
+
         if (backButton != null)
             backButton.onClick.AddListener(() => NavigationManager.Instance?.SelectTab(AppTab.Home));
 
         if (saveRoomButton != null)
-            saveRoomButton.onClick.AddListener(OnPrimaryActionClicked);
+        {
+            saveRoomButton.onClick.RemoveAllListeners();
+            saveRoomButton.onClick.AddListener(SaveRoom);
+        }
+
+        if (scanActionButton != null)
+        {
+            scanActionButton.onClick.RemoveAllListeners();
+            scanActionButton.onClick.AddListener(OnScanActionClicked);
+        }
     }
 
     void Update()
     {
-        RefreshPrimaryAction();
+        EnsureActionButtons();
+        RefreshActionButtons();
     }
 
     void SetShellBackgroundTransparent(bool transparent)
@@ -133,15 +147,19 @@ public class ScanARScreenController : ScreenBase
         if (LibraryDataManager.Instance == null)
             return;
 
-        string title = bridge != null && bridge.IsMeasurementComplete
-            ? "Saved Room"
-            : "Room Scan";
+        if (bridge != null && bridge.IsMeasurementComplete)
+        {
+            RoomScanData roomScanData = bridge.BuildRoomScanData();
+            LibraryDataManager.Instance.AddRoomScan(null, roomScanData);
+            UIManager.Instance?.ShowToast("Room with wall dimensions saved to Library");
+            return;
+        }
 
-        LibraryDataManager.Instance.AddItem(title, "rooms");
+        LibraryDataManager.Instance.AddItem("Room Scan", "rooms");
         UIManager.Instance?.ShowToast("Room saved to Library");
     }
 
-    void OnPrimaryActionClicked()
+    void OnScanActionClicked()
     {
         if (bridge == null)
             return;
@@ -155,12 +173,6 @@ public class ScanARScreenController : ScreenBase
             return;
         }
 
-        if (bridge.IsMeasurementComplete && !bridge.CanStartScan)
-        {
-            SaveRoom();
-            return;
-        }
-
         if (bridge.StartScan())
         {
             UIManager.Instance?.ShowToast("Scanning started");
@@ -170,21 +182,55 @@ public class ScanARScreenController : ScreenBase
         UIManager.Instance?.ShowToast("Move the camera until a wall or floor is detected");
     }
 
-    void RefreshPrimaryAction()
+    void EnsureActionButtons()
+    {
+        if (saveRoomButton == null || scanActionButton != null)
+            return;
+
+        scanActionButton = Instantiate(saveRoomButton, saveRoomButton.transform.parent);
+        scanActionButton.name = "ScanActionBtn";
+        scanActionButton.transform.SetSiblingIndex(saveRoomButton.transform.GetSiblingIndex());
+
+        RectTransform scanRect = scanActionButton.transform as RectTransform;
+        RectTransform saveRect = saveRoomButton.transform as RectTransform;
+        if (scanRect != null && saveRect != null && scanRect.parent == saveRect.parent)
+        {
+            scanRect.anchorMin = saveRect.anchorMin;
+            scanRect.anchorMax = saveRect.anchorMax;
+            scanRect.pivot = saveRect.pivot;
+            scanRect.sizeDelta = saveRect.sizeDelta;
+            scanRect.anchoredPosition = saveRect.anchoredPosition + new Vector2(-220f, 0f);
+        }
+
+        scanActionButtonLabel = scanActionButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        saveRoomButtonLabel = saveRoomButton.GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
+    void RefreshActionButtons()
     {
         if (saveRoomButton == null)
             return;
 
+        if (scanActionButton == null)
+            return;
+
+        bool canScan = bridge != null && (bridge.CanStartScan || bridge.IsScanning || bridge.IsMeasurementComplete);
+        bool canSave = bridge != null && bridge.IsMeasurementComplete && !bridge.IsScanning;
+
+        scanActionButton.gameObject.SetActive(canScan);
+        scanActionButton.interactable = bridge != null && (bridge.IsScanning || bridge.CanStartScan);
+
+        saveRoomButton.gameObject.SetActive(canSave);
+        saveRoomButton.interactable = canSave;
+
+        if (scanActionButtonLabel != null)
+            scanActionButtonLabel.text = bridge != null
+                ? (bridge.IsScanning ? "Stop Scan" : "Start Scan")
+                : "Searching...";
+
         if (saveRoomButtonLabel == null)
             saveRoomButtonLabel = saveRoomButton.GetComponentInChildren<TextMeshProUGUI>(true);
-
-        bool canShow = bridge != null && (bridge.CanStartScan || bridge.IsScanning || bridge.IsMeasurementComplete);
-
-        saveRoomButton.gameObject.SetActive(canShow);
-        saveRoomButton.interactable = bridge != null
-            && (bridge.IsScanning || bridge.CanStartScan || bridge.IsMeasurementComplete);
-
         if (saveRoomButtonLabel != null)
-            saveRoomButtonLabel.text = bridge != null ? bridge.GetPrimaryActionLabel() : "Searching...";
+            saveRoomButtonLabel.text = "Save Room";
     }
 }

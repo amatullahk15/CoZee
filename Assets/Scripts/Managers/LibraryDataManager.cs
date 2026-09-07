@@ -12,6 +12,8 @@ public class LibraryItem
     public string thumbnailPath;
     public bool isFavorite;
     public string createdAt;
+    public string detailsText;
+    public RoomScanData roomScanData;
 }
 
 [Serializable]
@@ -70,10 +72,29 @@ public class LibraryDataManager : MonoBehaviour
             createdAt = DateTime.UtcNow.ToString("o")
         };
 
-        collection.items.Insert(0, item);
-        Save();
-        OnLibraryChanged?.Invoke();
-        return item;
+        return AddPreparedItem(item);
+    }
+
+    public LibraryItem AddRoomScan(string title, RoomScanData roomScanData, string thumbnailPath = null)
+    {
+        if (roomScanData == null)
+            return AddItem(string.IsNullOrWhiteSpace(title) ? "Saved Room" : title, "rooms", thumbnailPath);
+
+        var item = new LibraryItem
+        {
+            id = Guid.NewGuid().ToString(),
+            title = string.IsNullOrWhiteSpace(title)
+                ? BuildRoomTitle(roomScanData)
+                : title,
+            category = "rooms",
+            thumbnailPath = thumbnailPath,
+            isFavorite = false,
+            createdAt = DateTime.UtcNow.ToString("o"),
+            detailsText = roomScanData.summary,
+            roomScanData = CloneRoomScanData(roomScanData)
+        };
+
+        return AddPreparedItem(item);
     }
 
     public void ToggleFavorite(string id)
@@ -126,7 +147,44 @@ public class LibraryDataManager : MonoBehaviour
                 title = "Living Room AR Measurement",
                 category = "rooms",
                 isFavorite = true,
-                createdAt = DateTime.UtcNow.AddHours(-4).ToString("o")
+                createdAt = DateTime.UtcNow.AddHours(-4).ToString("o"),
+                detailsText = "2 walls • 1 floor • 18.40 m2",
+                roomScanData = new RoomScanData
+                {
+                    roomId = Guid.NewGuid().ToString(),
+                    summary = "2 walls • 1 floor • 18.40 m2",
+                    wallCount = 2,
+                    floorCount = 1,
+                    totalWallAreaSquareMeters = 12.2f,
+                    totalFloorAreaSquareMeters = 6.2f,
+                    surfaces = new List<ScannedSurfaceRecord>
+                    {
+                        new ScannedSurfaceRecord
+                        {
+                            label = "Wall 1",
+                            surfaceType = "Wall",
+                            primaryDimensionMeters = 3.40f,
+                            secondaryDimensionMeters = 2.60f,
+                            areaSquareMeters = 8.84f
+                        },
+                        new ScannedSurfaceRecord
+                        {
+                            label = "Wall 2",
+                            surfaceType = "Wall",
+                            primaryDimensionMeters = 1.30f,
+                            secondaryDimensionMeters = 2.60f,
+                            areaSquareMeters = 3.38f
+                        },
+                        new ScannedSurfaceRecord
+                        {
+                            label = "Floor 1",
+                            surfaceType = "Floor",
+                            primaryDimensionMeters = 3.10f,
+                            secondaryDimensionMeters = 2.00f,
+                            areaSquareMeters = 6.20f
+                        }
+                    }
+                }
             },
             new LibraryItem
             {
@@ -142,7 +200,36 @@ public class LibraryDataManager : MonoBehaviour
                 title = "Master Bedroom Vastu Alignment",
                 category = "rooms",
                 isFavorite = false,
-                createdAt = DateTime.UtcNow.AddDays(-1).ToString("o")
+                createdAt = DateTime.UtcNow.AddDays(-1).ToString("o"),
+                detailsText = "1 wall • 1 floor • 14.28 m2",
+                roomScanData = new RoomScanData
+                {
+                    roomId = Guid.NewGuid().ToString(),
+                    summary = "1 wall • 1 floor • 14.28 m2",
+                    wallCount = 1,
+                    floorCount = 1,
+                    totalWallAreaSquareMeters = 7.08f,
+                    totalFloorAreaSquareMeters = 7.20f,
+                    surfaces = new List<ScannedSurfaceRecord>
+                    {
+                        new ScannedSurfaceRecord
+                        {
+                            label = "Wall 1",
+                            surfaceType = "Wall",
+                            primaryDimensionMeters = 2.95f,
+                            secondaryDimensionMeters = 2.40f,
+                            areaSquareMeters = 7.08f
+                        },
+                        new ScannedSurfaceRecord
+                        {
+                            label = "Floor 1",
+                            surfaceType = "Floor",
+                            primaryDimensionMeters = 3.00f,
+                            secondaryDimensionMeters = 2.40f,
+                            areaSquareMeters = 7.20f
+                        }
+                    }
+                }
             },
             new LibraryItem
             {
@@ -154,6 +241,62 @@ public class LibraryDataManager : MonoBehaviour
             }
         };
         Save();
+    }
+
+    LibraryItem AddPreparedItem(LibraryItem item)
+    {
+        collection.items.Insert(0, item);
+        Save();
+        OnLibraryChanged?.Invoke();
+        return item;
+    }
+
+    static RoomScanData CloneRoomScanData(RoomScanData source)
+    {
+        if (source == null)
+            return null;
+
+        var clone = new RoomScanData
+        {
+            roomId = source.roomId,
+            summary = source.summary,
+            wallCount = source.wallCount,
+            floorCount = source.floorCount,
+            totalWallAreaSquareMeters = source.totalWallAreaSquareMeters,
+            totalFloorAreaSquareMeters = source.totalFloorAreaSquareMeters,
+            surfaces = new List<ScannedSurfaceRecord>()
+        };
+
+        if (source.surfaces != null)
+        {
+            foreach (ScannedSurfaceRecord record in source.surfaces)
+            {
+                clone.surfaces.Add(new ScannedSurfaceRecord
+                {
+                    label = record.label,
+                    surfaceType = record.surfaceType,
+                    primaryDimensionMeters = record.primaryDimensionMeters,
+                    secondaryDimensionMeters = record.secondaryDimensionMeters,
+                    areaSquareMeters = record.areaSquareMeters
+                });
+            }
+        }
+
+        return clone;
+    }
+
+    static string BuildRoomTitle(RoomScanData roomScanData)
+    {
+        if (roomScanData == null)
+            return "Saved Room";
+
+        if (roomScanData.wallCount > 0)
+            return $"Saved Room ({roomScanData.wallCount} Wall{(roomScanData.wallCount == 1 ? "" : "s")})";
+
+        if (roomScanData.floorCount > 0)
+            return $"Saved Room ({roomScanData.floorCount} Floor{(roomScanData.floorCount == 1 ? "" : "s")})";
+
+        return "Saved Room";
     }
 
     void Save()
