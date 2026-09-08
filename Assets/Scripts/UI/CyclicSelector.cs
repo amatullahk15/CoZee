@@ -18,8 +18,9 @@ public class CyclicSelector : MonoBehaviour
         if (labelText == null) labelText = GetComponentInChildren<TextMeshProUGUI>();
 
         if (button != null)
-            button.onClick.AddListener(CycleNext);
+            button.onClick.AddListener(OpenDropdown);
 
+        EnsureDropdownIcon();
         UpdateLabel();
     }
 
@@ -43,11 +44,17 @@ public class CyclicSelector : MonoBehaviour
         UpdateLabel();
     }
 
-    void CycleNext()
+    void OpenDropdown()
     {
-        if (options == null || options.Length == 0) return;
-        
-        currentIndex = (currentIndex + 1) % options.Length;
+        OptionDropdownMenu.Toggle(button != null ? button.transform : transform, options, currentIndex, SelectOption);
+    }
+
+    void SelectOption(int index)
+    {
+        if (options == null || index < 0 || index >= options.Length)
+            return;
+
+        currentIndex = index;
         UpdateLabel();
     }
 
@@ -55,7 +62,34 @@ public class CyclicSelector : MonoBehaviour
     {
         if (labelText != null && options != null && options.Length > 0)
         {
-            labelText.text = $"{options[currentIndex]}                                                  v";
+            labelText.text = options[currentIndex];
+            labelText.enableWordWrapping = false;
+            labelText.overflowMode = TextOverflowModes.Ellipsis;
+            labelText.alignment = TextAlignmentOptions.MidlineLeft;
+            labelText.rectTransform.anchorMin = new Vector2(0.10f, 0f);
+            labelText.rectTransform.anchorMax = new Vector2(0.76f, 1f);
+            labelText.rectTransform.offsetMin = Vector2.zero;
+            labelText.rectTransform.offsetMax = Vector2.zero;
         }
+    }
+
+    void EnsureDropdownIcon()
+    {
+        if (button == null || button.transform.Find("DropdownIcon") != null)
+            return;
+
+        GameObject iconObject = new GameObject("DropdownIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        iconObject.transform.SetParent(button.transform, false);
+        TextMeshProUGUI icon = iconObject.GetComponent<TextMeshProUGUI>();
+        icon.font = FontAwesomeIcons.FontAsset;
+        icon.text = "\uf0d7";
+        icon.fontSize = 12f;
+        icon.color = new Color(0.075f, 0.118f, 0.145f, 1f);
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.raycastTarget = false;
+        icon.rectTransform.anchorMin = new Vector2(0.78f, 0f);
+        icon.rectTransform.anchorMax = new Vector2(0.92f, 1f);
+        icon.rectTransform.offsetMin = Vector2.zero;
+        icon.rectTransform.offsetMax = Vector2.zero;
     }
 }

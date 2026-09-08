@@ -7,6 +7,7 @@ public class GeneratedConceptCard : MonoBehaviour
     [SerializeField] TextMeshProUGUI titleText;
     [SerializeField] TextMeshProUGUI promptText;
     [SerializeField] Button saveButton;
+    [SerializeField] Image previewImage;
 
     DesignConcept boundConcept;
 
@@ -25,6 +26,8 @@ public class GeneratedConceptCard : MonoBehaviour
 
         if (promptText != null)
             promptText.text = concept.prompt;
+
+        DesignStylePreview.Apply(previewImage, concept.style);
     }
 
     void Save()

@@ -20,7 +20,9 @@ public static class CoZeeVisualTheme
         if (root == null)
             return;
 
-        ApplyTab(FindDeepChild(root, "DesignAITab"));
+        Transform designTab = FindDeepChild(root, "DesignAITab");
+        ApplyTab(designTab);
+        ApplyDesignControls(designTab);
         ApplyTab(FindDeepChild(root, "VastuTab"));
         ApplyScanOverlay(FindDeepChild(root, "ScanARTab"));
     }
@@ -83,6 +85,33 @@ public static class CoZeeVisualTheme
 
         foreach (Button button in tab.GetComponentsInChildren<Button>(true))
             StyleButton(button);
+    }
+
+    static void ApplyDesignControls(Transform tab)
+    {
+        if (tab == null)
+            return;
+
+        foreach (Toggle toggle in tab.GetComponentsInChildren<Toggle>(true))
+        {
+            Image background = toggle.GetComponent<Image>();
+            if (background != null)
+                SetRounded(background, toggle.isOn ? Sand : Mint);
+        }
+
+        foreach (Slider slider in tab.GetComponentsInChildren<Slider>(true))
+        {
+            Image track = slider.targetGraphic as Image;
+            Image fill = slider.fillRect != null ? slider.fillRect.GetComponent<Image>() : null;
+            Image handle = slider.handleRect != null ? slider.handleRect.GetComponent<Image>() : null;
+
+            if (track != null)
+                track.color = MutedInk;
+            if (fill != null)
+                fill.color = Teal;
+            if (handle != null)
+                SetRounded(handle, Sand);
+        }
     }
 
     static void StyleButton(Button button)

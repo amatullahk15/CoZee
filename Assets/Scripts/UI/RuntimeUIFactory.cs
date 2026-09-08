@@ -28,15 +28,55 @@ public static class RuntimeUIFactory
         layout.childControlHeight = true;
         layout.childForceExpandHeight = false;
 
-        var title = CreateText(go.transform, "Title", "Modern Living Room Concept", 22, FontStyles.Bold, TextWhite);
-        var titleElem = title.gameObject.AddComponent<LayoutElement>();
-        titleElem.preferredHeight = 26f;
+        var contentRow = new GameObject("ConceptContentRow", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        contentRow.transform.SetParent(go.transform, false);
+        var rowLayout = contentRow.GetComponent<HorizontalLayoutGroup>();
+        rowLayout.spacing = 14f;
+        rowLayout.childAlignment = TextAnchor.MiddleLeft;
+        rowLayout.childControlWidth = true;
+        rowLayout.childControlHeight = true;
+        rowLayout.childForceExpandWidth = true;
+        rowLayout.childForceExpandHeight = true;
+        contentRow.GetComponent<LayoutElement>().preferredHeight = 142f;
 
-        var prompt = CreateText(go.transform, "Prompt", "Prompt description...", 16, FontStyles.Normal, TextMuted);
+        var previewObject = new GameObject("StylePreview", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(LayoutElement));
+        previewObject.transform.SetParent(contentRow.transform, false);
+        var previewElement = previewObject.GetComponent<LayoutElement>();
+        previewElement.minWidth = 126f;
+        previewElement.preferredWidth = 0f;
+        previewElement.minHeight = 126f;
+        previewElement.preferredHeight = 0f;
+        previewElement.flexibleWidth = 1f;
+        previewElement.flexibleHeight = 1f;
+        previewObject.GetComponent<Image>().color = SurfaceElevated;
+
+        var titleColumn = new GameObject("TitleColumn", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
+        titleColumn.transform.SetParent(contentRow.transform, false);
+        var titleLayout = titleColumn.GetComponent<VerticalLayoutGroup>();
+        titleLayout.spacing = 8f;
+        titleLayout.childAlignment = TextAnchor.UpperLeft;
+        titleLayout.childControlWidth = true;
+        titleLayout.childControlHeight = true;
+        titleLayout.childForceExpandWidth = true;
+        titleLayout.childForceExpandHeight = false;
+        var titleColumnElement = titleColumn.GetComponent<LayoutElement>();
+        titleColumnElement.minWidth = 126f;
+        titleColumnElement.flexibleWidth = 1f;
+        titleColumnElement.flexibleHeight = 1f;
+
+        var title = CreateText(titleColumn.transform, "Title", "Modern", 22, FontStyles.Bold, TextWhite);
+        title.enableWordWrapping = false;
+        title.overflowMode = TextOverflowModes.Ellipsis;
+        title.gameObject.AddComponent<LayoutElement>().preferredHeight = 36f;
+
+        var prompt = CreateText(titleColumn.transform, "Prompt", "Prompt description...", 14, FontStyles.Normal, TextMuted);
         var promptElem = prompt.gameObject.AddComponent<LayoutElement>();
         promptElem.flexibleHeight = 1f;
+        prompt.enableWordWrapping = true;
+        prompt.overflowMode = TextOverflowModes.Ellipsis;
 
         var saveBtn = CreateButton(go.transform, "Save", "Save to Library", PrimaryBlue, TextWhite, 48f);
+        AddInlineButtonIcon(saveBtn, "\uf0c7", TextWhite);
         var saveElem = saveBtn.GetComponent<LayoutElement>();
         if (saveElem == null) saveElem = saveBtn.AddComponent<LayoutElement>();
         saveElem.preferredHeight = 48f;
@@ -45,6 +85,7 @@ public static class RuntimeUIFactory
         SetField(card, "titleText", title);
         SetField(card, "promptText", prompt);
         SetField(card, "saveButton", saveBtn.GetComponent<Button>());
+        SetField(card, "previewImage", previewObject.GetComponent<Image>());
         return card;
     }
 
