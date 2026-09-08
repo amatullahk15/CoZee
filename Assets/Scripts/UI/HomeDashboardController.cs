@@ -303,59 +303,53 @@ public class HomeDashboardController : ScreenBase
     void CreateQuickActionIcon(Transform action, int iconType)
     {
         Transform badge = FindDeepChild(action, "IconBadge");
-        if (badge == null || badge.Find("QuickActionIcon") != null)
+        if (badge == null)
             return;
 
         TextMeshProUGUI placeholder = badge.GetComponentInChildren<TextMeshProUGUI>(true);
         if (placeholder != null)
             placeholder.text = string.Empty;
 
-        GameObject icon = new GameObject("QuickActionIcon", typeof(RectTransform));
-        icon.transform.SetParent(badge, false);
+        Transform existingIcon = badge.Find("QuickActionIcon");
+        GameObject icon;
+        if (existingIcon != null && existingIcon.GetComponent<TextMeshProUGUI>() != null)
+        {
+            icon = existingIcon.gameObject;
+        }
+        else
+        {
+            if (existingIcon != null)
+                existingIcon.gameObject.SetActive(false);
+
+            icon = new GameObject("QuickActionIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            icon.transform.SetParent(badge, false);
+        }
+
         RectTransform iconRect = icon.GetComponent<RectTransform>();
         iconRect.anchorMin = Vector2.zero;
         iconRect.anchorMax = Vector2.one;
-        iconRect.offsetMin = new Vector2(10f, 6f);
-        iconRect.offsetMax = new Vector2(-10f, -6f);
+        iconRect.offsetMin = new Vector2(4f, 2f);
+        iconRect.offsetMax = new Vector2(-4f, -2f);
 
-        switch (iconType)
-        {
-            case 0: // AR scan frame
-                AddIconMark(icon.transform, new Vector2(-9f, 7f), new Vector2(9f, 3f));
-                AddIconMark(icon.transform, new Vector2(9f, 7f), new Vector2(9f, 3f));
-                AddIconMark(icon.transform, new Vector2(-9f, -7f), new Vector2(9f, 3f));
-                AddIconMark(icon.transform, new Vector2(9f, -7f), new Vector2(9f, 3f));
-                break;
-            case 1: // Design sparkle
-                AddIconMark(icon.transform, Vector2.zero, new Vector2(13f, 13f), 45f);
-                AddIconMark(icon.transform, new Vector2(10f, 9f), new Vector2(5f, 5f));
-                break;
-            case 2: // Vastu compass
-                AddIconMark(icon.transform, Vector2.zero, new Vector2(14f, 14f), 45f);
-                AddIconMark(icon.transform, Vector2.zero, new Vector2(22f, 3f));
-                AddIconMark(icon.transform, Vector2.zero, new Vector2(3f, 22f));
-                break;
-            default: // Library books
-                AddIconMark(icon.transform, new Vector2(-7f, 0f), new Vector2(4f, 19f));
-                AddIconMark(icon.transform, Vector2.zero, new Vector2(4f, 19f));
-                AddIconMark(icon.transform, new Vector2(7f, 0f), new Vector2(4f, 19f));
-                break;
-        }
+        TextMeshProUGUI iconText = icon.GetComponent<TextMeshProUGUI>();
+        iconText.font = FontAwesomeIcons.FontAsset;
+        iconText.text = QuickActionIconGlyph(iconType);
+        iconText.color = Teal;
+        iconText.fontSize = 19f;
+        iconText.alignment = TextAlignmentOptions.Center;
+        iconText.enableWordWrapping = false;
+        iconText.raycastTarget = false;
     }
 
-    static void AddIconMark(Transform parent, Vector2 position, Vector2 size, float rotation = 0f)
+    static string QuickActionIconGlyph(int iconType)
     {
-        GameObject mark = new GameObject("Mark", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        mark.transform.SetParent(parent, false);
-        RectTransform rect = mark.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = position;
-        rect.sizeDelta = size;
-        rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
-        Image image = mark.GetComponent<Image>();
-        image.color = Teal;
-        image.raycastTarget = false;
+        switch (iconType)
+        {
+            case 0: return "\uf546"; // ruler-combined
+            case 1: return "\uf0d0"; // wand-magic-sparkles
+            case 2: return "\uf14e"; // compass
+            default: return "\uf02d"; // book-open
+        }
     }
 
     void SetTextStyle(string objectName, Color color, float size, FontStyles style)
