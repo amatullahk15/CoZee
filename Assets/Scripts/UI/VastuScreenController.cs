@@ -10,16 +10,20 @@ public class VastuScreenController : ScreenBase
     [SerializeField] Button checkLayoutBtn;
 
     bool compassOn = true;
+    VastuDashboardView dashboard;
 
     protected override void OnShow()
     {
         EnsureViews();
         VastuAssistantManager.Instance?.EnsureWelcomeMessage();
+        EnsureDashboard();
+        dashboard?.RefreshRooms();
     }
 
     void Awake()
     {
         EnsureViews();
+        EnsureDashboard();
     }
 
     void Start()
@@ -38,6 +42,25 @@ public class VastuScreenController : ScreenBase
 
         if (directionSelector == null)
             directionSelector = GetComponentInChildren<RoomDirectionSelector>(true);
+    }
+
+    void EnsureDashboard()
+    {
+        if (dashboard == null)
+            dashboard = GetComponentInChildren<VastuDashboardView>(true);
+
+        if (dashboard == null)
+        {
+            // Preserve the scene's legacy Vastu controls, but do not let them overlap the unified dashboard.
+            for (int i = 0; i < transform.childCount; i++)
+                transform.GetChild(i).gameObject.SetActive(false);
+
+            GameObject root = new GameObject("VastuDashboard", typeof(RectTransform));
+            root.transform.SetParent(transform, false);
+            dashboard = root.AddComponent<VastuDashboardView>();
+        }
+
+        dashboard.Build();
     }
 
     void ToggleCompass()
