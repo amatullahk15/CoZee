@@ -116,11 +116,7 @@ public static class RuntimeUIFactory
         if (cachedFont != null)
             return cachedFont;
 
-        cachedFont = TMP_Settings.defaultFontAsset;
-        if (cachedFont != null)
-            return cachedFont;
-
-        cachedFont = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+        cachedFont = CoZeeTypography.UIFont;
         return cachedFont;
     }
 
@@ -136,6 +132,7 @@ public static class RuntimeUIFactory
         tmp.text = value;
         tmp.fontSize = size;
         tmp.fontStyle = style;
+        tmp.font = CoZeeTypography.FontFor(name, size, style);
         tmp.color = color;
         tmp.alignment = TextAlignmentOptions.Left;
         tmp.enableWordWrapping = true;

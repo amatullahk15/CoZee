@@ -42,13 +42,13 @@ public class HomeDashboardController : ScreenBase
 
     void EnsureTextColors()
     {
-        TMP_FontAsset font = TMP_Settings.defaultFontAsset ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         TextMeshProUGUI[] tmps = GetComponentsInChildren<TextMeshProUGUI>(true);
         foreach (var tmp in tmps)
         {
             if (tmp != null)
             {
-                if (tmp.font == null && font != null)
+                TMP_FontAsset font = CoZeeTypography.FontFor(tmp.gameObject.name, tmp.fontSize, tmp.fontStyle);
+                if (font != null)
                     tmp.font = font;
 
                 tmp.color = IsLightText(tmp) ? Color.white : Ink;

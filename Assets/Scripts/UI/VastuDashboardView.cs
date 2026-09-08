@@ -457,7 +457,7 @@ public class VastuDashboardView : MonoBehaviour
         GameObject go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         go.transform.SetParent(parent, false);
         TextMeshProUGUI text = go.GetComponent<TextMeshProUGUI>();
-        text.font = TMP_Settings.defaultFontAsset;
+        text.font = CoZeeTypography.FontFor(name, size, style);
         text.text = value;
         text.fontSize = size;
         text.fontStyle = style;

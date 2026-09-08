@@ -32,7 +32,7 @@ public static class CoZeeVisualTheme
 
         foreach (TextMeshProUGUI text in tab.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
-            TMP_FontAsset font = GetFont();
+            TMP_FontAsset font = CoZeeTypography.FontFor(text.gameObject.name, text.fontSize, text.fontStyle);
             if (font != null)
                 text.font = font;
             text.color = IsOnTealSurface(text.transform) ? LightText : Ink;
@@ -65,7 +65,7 @@ public static class CoZeeVisualTheme
         if (fallbackFont != null)
             return fallbackFont;
 
-        fallbackFont = TMP_Settings.defaultFontAsset ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+        fallbackFont = CoZeeTypography.UIFont;
         return fallbackFont;
     }
 

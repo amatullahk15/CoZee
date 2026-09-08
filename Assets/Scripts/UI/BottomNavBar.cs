@@ -243,13 +243,17 @@ public class BottomNavBar : MonoBehaviour
 
             if (tab.iconText != null)
             {
-                tab.iconText.text = string.Empty;
-                CreateVectorIcon(tab.iconText.transform, tab.tab);
+                SetFontAwesomeIcon(tab.iconText, tab.tab);
+            }
+            else
+            {
+                tab.iconText = CreateIconText(tab.button.transform, tab.tab);
             }
 
             if (tab.labelText != null)
             {
                 tab.labelText.text = labels[i];
+                tab.labelText.font = CoZeeTypography.BodyFont;
                 tab.labelText.fontSize = 11;
                 tab.labelText.enableWordWrapping = false;
             }
@@ -272,7 +276,7 @@ public class BottomNavBar : MonoBehaviour
         rect.offsetMax = new Vector2(-4f, 0f);
 
         TextMeshProUGUI text = labelObject.GetComponent<TextMeshProUGUI>();
-        text.font = TMP_Settings.defaultFontAsset;
+        text.font = CoZeeTypography.BodyFont;
         text.text = label;
         text.fontSize = 11;
         text.fontStyle = FontStyles.Bold;
@@ -281,6 +285,43 @@ public class BottomNavBar : MonoBehaviour
         text.overflowMode = TextOverflowModes.Ellipsis;
         text.raycastTarget = false;
         return text;
+    }
+
+    TextMeshProUGUI CreateIconText(Transform parent, AppTab tab)
+    {
+        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        iconObject.transform.SetParent(parent, false);
+
+        RectTransform rect = iconObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 0.42f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.offsetMin = new Vector2(4f, 2f);
+        rect.offsetMax = new Vector2(-4f, -1f);
+
+        TextMeshProUGUI icon = iconObject.GetComponent<TextMeshProUGUI>();
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.fontSize = 24f;
+        icon.raycastTarget = false;
+        SetFontAwesomeIcon(icon, tab);
+        return icon;
+    }
+
+    void SetFontAwesomeIcon(TextMeshProUGUI icon, AppTab tab)
+    {
+        if (icon == null)
+            return;
+
+        Transform legacyIcon = icon.transform.Find("VectorIcon");
+        if (legacyIcon != null)
+            legacyIcon.gameObject.SetActive(false);
+
+        icon.font = FontAwesomeIcons.FontAsset;
+        icon.text = FontAwesomeIcons.ForTab(tab);
+        icon.fontSize = 24f;
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.enableWordWrapping = false;
+        icon.overflowMode = TextOverflowModes.Overflow;
+        icon.raycastTarget = false;
     }
 
     void CreateVectorIcon(Transform parent, AppTab tab)

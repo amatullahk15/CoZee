@@ -141,7 +141,7 @@ public class LibraryScreenController : ScreenBase
         }
 
         text.transform.SetAsLastSibling();
-        TMP_FontAsset font = TMP_Settings.defaultFontAsset ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+        TMP_FontAsset font = CoZeeTypography.FontFor(name, size, style);
         if (font != null)
             text.font = font;
         text.text = value;
@@ -317,7 +317,7 @@ public class LibraryScreenController : ScreenBase
         LayoutElement element = textObject.GetComponent<LayoutElement>();
         element.preferredHeight = height;
         TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
-        TMP_FontAsset font = TMP_Settings.defaultFontAsset ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+        TMP_FontAsset font = CoZeeTypography.FontFor(name, size, style);
         if (font != null)
             text.font = font;
         text.text = value;
