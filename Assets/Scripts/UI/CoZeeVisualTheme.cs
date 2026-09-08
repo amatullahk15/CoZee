@@ -22,7 +22,6 @@ public static class CoZeeVisualTheme
 
         ApplyTab(FindDeepChild(root, "DesignAITab"));
         ApplyTab(FindDeepChild(root, "VastuTab"));
-        ApplyTab(FindDeepChild(root, "LibraryTab"));
         ApplyScanOverlay(FindDeepChild(root, "ScanARTab"));
     }
 

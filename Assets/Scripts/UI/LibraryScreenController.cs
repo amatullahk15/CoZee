@@ -70,6 +70,9 @@ public class LibraryScreenController : ScreenBase
         Transform header = transform.Find("Header");
         if (header != null)
         {
+            Image headerImage = header.GetComponent<Image>();
+            if (headerImage != null)
+                headerImage.color = new Color(0.055f, 0.36f, 0.34f, 1f);
             LayoutElement headerLayout = header.GetComponent<LayoutElement>();
             if (headerLayout != null)
                 headerLayout.preferredHeight = 92f;
@@ -168,6 +171,10 @@ public class LibraryScreenController : ScreenBase
             layout.childForceExpandHeight = true;
         }
 
+        Image filterImage = filterBar.GetComponent<Image>();
+        if (filterImage != null)
+            filterImage.color = new Color(1f, 0.992f, 0.965f, 1f);
+
         string[] labels = { "All", "Saved Rooms", "AI Designs", "Favorites" };
         Button[] buttons = filterBar.GetComponentsInChildren<Button>(true);
         for (int i = 0; i < buttons.Length && i < labels.Length; i++)
@@ -180,6 +187,9 @@ public class LibraryScreenController : ScreenBase
             element.flexibleWidth = 1f;
 
             TextMeshProUGUI label = buttons[i].GetComponentInChildren<TextMeshProUGUI>(true);
+            Image buttonImage = buttons[i].GetComponent<Image>();
+            if (buttonImage != null)
+                buttonImage.color = i == 1 ? new Color(0.93f, 0.86f, 0.73f, 1f) : new Color(0.82f, 0.91f, 0.87f, 1f);
             if (label == null)
                 continue;
 
@@ -233,7 +243,6 @@ public class LibraryScreenController : ScreenBase
             cards.Add(card);
         }
 
-        CoZeeVisualTheme.Apply(transform.root);
     }
 
     public void ShowRoomDetails(LibraryItem item)

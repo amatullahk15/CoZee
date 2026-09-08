@@ -53,37 +53,18 @@ public static class RuntimeUIFactory
         var cardElem = go.AddComponent<LayoutElement>();
         cardElem.preferredHeight = 184f;
 
-        var layout = go.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(20, 20, 18, 18);
-        layout.spacing = 8f;
-        layout.childAlignment = TextAnchor.UpperLeft;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandHeight = false;
-
         var title = CreateText(go.transform, "Title", "Saved Room Model", 21, FontStyles.Bold, TextWhite);
-        var titleElem = title.gameObject.AddComponent<LayoutElement>();
-        titleElem.preferredHeight = 42f;
+        Anchor(title.GetComponent<RectTransform>(), new Vector2(0.06f, 0.66f), new Vector2(0.94f, 0.91f));
         title.enableWordWrapping = true;
         title.overflowMode = TextOverflowModes.Ellipsis;
 
         var category = CreateText(go.transform, "Category", "2 walls | 1 floor | 18.40 m2", 14, FontStyles.Normal, TextMuted);
-        var categoryElem = category.gameObject.AddComponent<LayoutElement>();
-        categoryElem.preferredHeight = 32f;
+        Anchor(category.GetComponent<RectTransform>(), new Vector2(0.06f, 0.43f), new Vector2(0.94f, 0.62f));
 
-        var actions = CreatePanel(go.transform, "Actions", Color.clear);
-        var actionsElem = actions.AddComponent<LayoutElement>();
-        actionsElem.preferredHeight = 48f;
-        var actionsLayout = actions.AddComponent<HorizontalLayoutGroup>();
-        actionsLayout.spacing = 12f;
-        actionsLayout.childAlignment = TextAnchor.MiddleCenter;
-        actionsLayout.childControlWidth = true;
-        actionsLayout.childControlHeight = true;
-        actionsLayout.childForceExpandWidth = true;
-        actionsLayout.childForceExpandHeight = true;
-
-        var openBtn = CreateButton(actions.transform, "Open", "Open details", SurfaceElevated, TextWhite, 48f);
-        var deleteBtn = CreateButton(actions.transform, "Delete", "Delete", DangerRed, Color.white, 48f);
+        var openBtn = CreateButton(go.transform, "Open", "Open details", SurfaceElevated, TextWhite, 48f);
+        Anchor(openBtn.GetComponent<RectTransform>(), new Vector2(0.06f, 0.10f), new Vector2(0.47f, 0.34f));
+        var deleteBtn = CreateButton(go.transform, "Delete", "Delete", DangerRed, Color.white, 48f);
+        Anchor(deleteBtn.GetComponent<RectTransform>(), new Vector2(0.53f, 0.10f), new Vector2(0.94f, 0.34f));
 
         var card = go.AddComponent<LibraryItemCard>();
         SetField(card, "titleText", title);
@@ -91,6 +72,14 @@ public static class RuntimeUIFactory
         SetField(card, "openButton", openBtn.GetComponent<Button>());
         SetField(card, "deleteButton", deleteBtn.GetComponent<Button>());
         return card;
+    }
+
+    static void Anchor(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax)
+    {
+        rect.anchorMin = anchorMin;
+        rect.anchorMax = anchorMax;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
     public static VastuChatBubble CreateChatBubble(Transform parent)
