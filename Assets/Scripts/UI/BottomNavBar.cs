@@ -28,6 +28,7 @@ public class BottomNavBar : MonoBehaviour
     {
         EnsureTabs();
         ApplyNavigationPresentation();
+        CoZeeVisualTheme.Apply(transform.root);
 
         if (tabs == null || tabs.Length == 0)
         {
@@ -154,6 +155,8 @@ public class BottomNavBar : MonoBehaviour
 
         if (tabs == null)
             return;
+
+        CoZeeVisualTheme.Apply(transform.root);
 
         Color[] defaultNormals = new Color[] { NavSurface, NavSurface, NavSurface, NavSurface, NavSurface };
         Color[] defaultActives = new Color[] { NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface };

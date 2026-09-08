@@ -24,6 +24,7 @@ public class LibraryTabBar : MonoBehaviour
         {
             string name = btn.gameObject.name.ToLowerInvariant();
             btn.onClick.RemoveAllListeners();
+            btn.transition = Selectable.Transition.ColorTint;
 
             if (name.Contains("all"))
             {

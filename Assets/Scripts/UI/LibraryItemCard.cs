@@ -56,6 +56,13 @@ public class LibraryItemCard : MonoBehaviour
 
         if (boundItem.category == "rooms")
         {
+            LibraryScreenController library = FindObjectOfType<LibraryScreenController>(true);
+            if (library != null)
+            {
+                library.ShowRoomDetails(boundItem);
+                return;
+            }
+
             NavigationManager.Instance?.SelectTab(AppTab.ScanAR);
         }
         else

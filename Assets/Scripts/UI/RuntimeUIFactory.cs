@@ -4,12 +4,12 @@ using TMPro;
 
 public static class RuntimeUIFactory
 {
-    static readonly Color SurfaceDark = new Color(0.12f, 0.16f, 0.23f, 0.96f); // #1E293B
-    static readonly Color SurfaceElevated = new Color(0.20f, 0.25f, 0.33f, 0.96f); // #334155
-    static readonly Color PrimaryBlue = new Color(0.23f, 0.51f, 0.96f, 1f); // #3B82F6
+    static readonly Color SurfaceDark = new Color(1f, 0.992f, 0.965f, 1f);
+    static readonly Color SurfaceElevated = new Color(0.82f, 0.91f, 0.87f, 1f);
+    static readonly Color PrimaryBlue = new Color(0.93f, 0.86f, 0.73f, 1f);
     static readonly Color DangerRed = new Color(0.94f, 0.27f, 0.27f, 1f); // #EF4444
-    static readonly Color TextWhite = new Color(0.97f, 0.98f, 0.99f, 1f);
-    static readonly Color TextMuted = new Color(0.58f, 0.64f, 0.72f, 1f);
+    static readonly Color TextWhite = new Color(0.075f, 0.118f, 0.145f, 1f);
+    static readonly Color TextMuted = new Color(0.30f, 0.38f, 0.40f, 1f);
 
     public static GeneratedConceptCard CreateConceptCard(Transform parent)
     {
@@ -35,7 +35,7 @@ public static class RuntimeUIFactory
         var promptElem = prompt.gameObject.AddComponent<LayoutElement>();
         promptElem.flexibleHeight = 1f;
 
-        var saveBtn = CreateButton(go.transform, "Save", "💾 Save to Library", PrimaryBlue, TextWhite, 48f);
+        var saveBtn = CreateButton(go.transform, "Save", "Save to Library", PrimaryBlue, TextWhite, 48f);
         var saveElem = saveBtn.GetComponent<LayoutElement>();
         if (saveElem == null) saveElem = saveBtn.AddComponent<LayoutElement>();
         saveElem.preferredHeight = 48f;
@@ -51,29 +51,39 @@ public static class RuntimeUIFactory
     {
         var go = CreatePanel(parent, "LibraryCard", SurfaceDark);
         var cardElem = go.AddComponent<LayoutElement>();
-        cardElem.preferredHeight = 110f;
+        cardElem.preferredHeight = 184f;
 
-        var layout = go.AddComponent<HorizontalLayoutGroup>();
-        layout.padding = new RectOffset(20, 20, 16, 16);
-        layout.spacing = 16f;
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.childControlWidth = false;
-        layout.childControlHeight = false;
+        var layout = go.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(20, 20, 18, 18);
+        layout.spacing = 8f;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandHeight = false;
 
-        // Info Stack
-        var infoCol = CreatePanel(go.transform, "InfoCol", Color.clear);
-        var infoElem = infoCol.AddComponent<LayoutElement>();
-        infoElem.preferredWidth = 400f;
-        infoElem.flexibleWidth = 1f;
+        var title = CreateText(go.transform, "Title", "Saved Room Model", 21, FontStyles.Bold, TextWhite);
+        var titleElem = title.gameObject.AddComponent<LayoutElement>();
+        titleElem.preferredHeight = 42f;
+        title.enableWordWrapping = true;
+        title.overflowMode = TextOverflowModes.Ellipsis;
 
-        var colLayout = infoCol.AddComponent<VerticalLayoutGroup>();
-        colLayout.spacing = 4f;
+        var category = CreateText(go.transform, "Category", "2 walls | 1 floor | 18.40 m2", 14, FontStyles.Normal, TextMuted);
+        var categoryElem = category.gameObject.AddComponent<LayoutElement>();
+        categoryElem.preferredHeight = 32f;
 
-        var title = CreateText(infoCol.transform, "Title", "Saved Room Model", 22, FontStyles.Bold, TextWhite);
-        var category = CreateText(infoCol.transform, "Category", "Category: AR Scans", 16, FontStyles.Normal, TextMuted);
+        var actions = CreatePanel(go.transform, "Actions", Color.clear);
+        var actionsElem = actions.AddComponent<LayoutElement>();
+        actionsElem.preferredHeight = 48f;
+        var actionsLayout = actions.AddComponent<HorizontalLayoutGroup>();
+        actionsLayout.spacing = 12f;
+        actionsLayout.childAlignment = TextAnchor.MiddleCenter;
+        actionsLayout.childControlWidth = true;
+        actionsLayout.childControlHeight = true;
+        actionsLayout.childForceExpandWidth = true;
+        actionsLayout.childForceExpandHeight = true;
 
-        var openBtn = CreateButton(go.transform, "Open", "Open", SurfaceElevated, TextWhite, 48f, 110f);
-        var deleteBtn = CreateButton(go.transform, "Delete", "Delete", DangerRed, TextWhite, 48f, 110f);
+        var openBtn = CreateButton(actions.transform, "Open", "Open details", SurfaceElevated, TextWhite, 48f);
+        var deleteBtn = CreateButton(actions.transform, "Delete", "Delete", DangerRed, Color.white, 48f);
 
         var card = go.AddComponent<LibraryItemCard>();
         SetField(card, "titleText", title);

@@ -8,6 +8,7 @@ public class SplashScreenController : MonoBehaviour
 {
     [SerializeField] CanvasGroup canvasGroup;
     [SerializeField] TextMeshProUGUI titleText;
+    [SerializeField] Image backgroundImage;
     [SerializeField] float displayDuration = 2f;
     [SerializeField] float fadeDuration = 0.5f;
 
@@ -19,13 +20,6 @@ public class SplashScreenController : MonoBehaviour
     void Start()
     {
         EnsureUi();
-
-        if (titleText != null)
-        {
-            titleText.text = "AR Interior Design";
-            titleText.color = Color.white;
-        }
-
         StartCoroutine(SplashRoutine());
     }
 
@@ -47,6 +41,33 @@ public class SplashScreenController : MonoBehaviour
             titleText.fontSize = 44f;
             titleText.overflowMode = TextOverflowModes.Overflow;
             titleText.alignment = TextAlignmentOptions.Center;
+        }
+
+        if (backgroundImage == null)
+        {
+            GameObject background = GameObject.Find("CanvasBackground");
+            if (background != null)
+                backgroundImage = background.GetComponent<Image>();
+        }
+
+        Texture2D splashTexture = Resources.Load<Texture2D>("UI/Splash/CoZeeSplash");
+        if (backgroundImage != null && splashTexture != null)
+        {
+            backgroundImage.sprite = Sprite.Create(
+                splashTexture,
+                new Rect(0f, 0f, splashTexture.width, splashTexture.height),
+                new Vector2(0.5f, 0.5f));
+            backgroundImage.type = Image.Type.Simple;
+            backgroundImage.preserveAspect = false;
+            backgroundImage.color = Color.white;
+
+            // The supplied artwork already contains the CoZee mark and needs no overlay copy.
+            if (titleText != null)
+                titleText.gameObject.SetActive(false);
+
+            Transform loadingSpinner = transform.Find("LoadingSpinner");
+            if (loadingSpinner != null)
+                loadingSpinner.gameObject.SetActive(false);
         }
 
         if (canvasGroup == null && titleText == null)
