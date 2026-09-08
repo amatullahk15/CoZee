@@ -25,6 +25,8 @@ public static class ScanAROverlayStyler
         StyleScanActions(actionTray, scanActionButton, saveRoomButton);
         RemoveLegacyCleanFurniturePanel(scanTab);
         ARCleanFurnitureControls.Create(scanTab.root);
+        ScanMeasurementPill.Create(scanTab.root);
+        HideLegacyDistanceText();
         HideLegacyArBottomPanel();
 
         bool arControlsFound = false;
@@ -291,6 +293,15 @@ public static class ScanAROverlayStyler
 
             if (image.gameObject.name == "BottomPanel")
                 image.gameObject.SetActive(false);
+        }
+    }
+
+    static void HideLegacyDistanceText()
+    {
+        foreach (TextMeshProUGUI text in Object.FindObjectsOfType<TextMeshProUGUI>(true))
+        {
+            if (text.gameObject.scene.name == "SampleScene" && text.gameObject.name == "DistanceText")
+                text.gameObject.SetActive(false);
         }
     }
 

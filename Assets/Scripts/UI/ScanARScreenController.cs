@@ -27,6 +27,7 @@ public class ScanARScreenController : ScreenBase
         SetBottomNavigationVisible(false);
         SetCleanFurnitureControlsVisible(true);
         SetScanActionTrayVisible(true);
+        SetScanMeasurementPillVisible(true);
         LoadAR();
     }
 
@@ -36,6 +37,7 @@ public class ScanARScreenController : ScreenBase
         SetBottomNavigationVisible(true);
         SetCleanFurnitureControlsVisible(false);
         SetScanActionTrayVisible(false);
+        SetScanMeasurementPillVisible(false);
         UnloadAR();
         overlayStyled = false;
     }
@@ -131,6 +133,13 @@ public class ScanARScreenController : ScreenBase
         Transform tray = transform.root.Find("ScanActionTray");
         if (tray != null)
             tray.gameObject.SetActive(visible);
+    }
+
+    void SetScanMeasurementPillVisible(bool visible)
+    {
+        Transform pill = transform.root.Find("ScanMeasurementPill");
+        if (pill != null)
+            pill.gameObject.SetActive(visible);
     }
 
     void DisableDuplicateEventSystems()
