@@ -5,6 +5,7 @@ using TMPro;
 public static class RuntimeUIFactory
 {
     static readonly Color SurfaceDark = new Color(1f, 0.992f, 0.965f, 1f);
+    static readonly Color LibraryCardSurface = new Color(0.92f, 0.94f, 0.93f, 1f);
     static readonly Color SurfaceElevated = new Color(0.82f, 0.91f, 0.87f, 1f);
     static readonly Color PrimaryBlue = new Color(0.93f, 0.86f, 0.73f, 1f);
     static readonly Color DangerRed = new Color(0.94f, 0.27f, 0.27f, 1f); // #EF4444
@@ -49,12 +50,14 @@ public static class RuntimeUIFactory
 
     public static LibraryItemCard CreateLibraryCard(Transform parent)
     {
-        var go = CreatePanel(parent, "LibraryCard", SurfaceDark);
+        var go = CreatePanel(parent, "LibraryCard", LibraryCardSurface);
         var cardElem = go.AddComponent<LayoutElement>();
+        cardElem.minHeight = 184f;
         cardElem.preferredHeight = 184f;
+        cardElem.flexibleHeight = 0f;
 
         var title = CreateText(go.transform, "Title", "Saved Room Model", 21, FontStyles.Bold, TextWhite);
-        Anchor(title.GetComponent<RectTransform>(), new Vector2(0.06f, 0.66f), new Vector2(0.94f, 0.91f));
+        Anchor(title.GetComponent<RectTransform>(), new Vector2(0.06f, 0.66f), new Vector2(0.78f, 0.91f));
         title.enableWordWrapping = true;
         title.overflowMode = TextOverflowModes.Ellipsis;
 
@@ -66,11 +69,22 @@ public static class RuntimeUIFactory
         var deleteBtn = CreateButton(go.transform, "Delete", "Delete", DangerRed, Color.white, 48f);
         Anchor(deleteBtn.GetComponent<RectTransform>(), new Vector2(0.53f, 0.10f), new Vector2(0.94f, 0.34f));
 
+        var favoriteButton = CreatePanel(go.transform, "Favorite", SurfaceElevated);
+        favoriteButton.AddComponent<Button>();
+        Anchor(favoriteButton.GetComponent<RectTransform>(), new Vector2(0.82f, 0.69f), new Vector2(0.94f, 0.91f));
+        var favoriteIcon = CreateText(favoriteButton.transform, "Icon", "\uf005", 16, FontStyles.Normal, TextWhite);
+        favoriteIcon.font = FontAwesomeIcons.FontAsset;
+        favoriteIcon.alignment = TextAlignmentOptions.Center;
+        Stretch(favoriteIcon.rectTransform);
+        var favoriteToggle = favoriteButton.AddComponent<FavoriteToggle>();
+        SetField(favoriteToggle, "iconText", favoriteIcon);
+
         var card = go.AddComponent<LibraryItemCard>();
         SetField(card, "titleText", title);
         SetField(card, "categoryText", category);
         SetField(card, "openButton", openBtn.GetComponent<Button>());
         SetField(card, "deleteButton", deleteBtn.GetComponent<Button>());
+        SetField(card, "favoriteToggle", favoriteToggle);
         return card;
     }
 

@@ -62,6 +62,9 @@ public class LibraryDataManager : MonoBehaviour
 
     public LibraryItem AddItem(string title, string category, string thumbnailPath = null)
     {
+        if (category == "rooms" && (string.IsNullOrWhiteSpace(title) || title == "Room Scan" || title == "Saved Room"))
+            title = GetNextRoomTitle();
+
         var item = new LibraryItem
         {
             id = Guid.NewGuid().ToString(),
@@ -78,13 +81,13 @@ public class LibraryDataManager : MonoBehaviour
     public LibraryItem AddRoomScan(string title, RoomScanData roomScanData, string thumbnailPath = null)
     {
         if (roomScanData == null)
-            return AddItem(string.IsNullOrWhiteSpace(title) ? "Saved Room" : title, "rooms", thumbnailPath);
+            return AddItem(string.IsNullOrWhiteSpace(title) ? GetNextRoomTitle() : title, "rooms", thumbnailPath);
 
         var item = new LibraryItem
         {
             id = Guid.NewGuid().ToString(),
             title = string.IsNullOrWhiteSpace(title)
-                ? BuildRoomTitle(roomScanData)
+                ? GetNextRoomTitle()
                 : title,
             category = "rooms",
             thumbnailPath = thumbnailPath,
@@ -285,18 +288,19 @@ public class LibraryDataManager : MonoBehaviour
         return clone;
     }
 
-    static string BuildRoomTitle(RoomScanData roomScanData)
+    string GetNextRoomTitle()
     {
-        if (roomScanData == null)
-            return "Saved Room";
+        int highestRoomNumber = 0;
+        foreach (LibraryItem item in collection.items)
+        {
+            if (item.category != "rooms" || string.IsNullOrWhiteSpace(item.title) || !item.title.StartsWith("Room "))
+                continue;
 
-        if (roomScanData.wallCount > 0)
-            return $"Saved Room ({roomScanData.wallCount} Wall{(roomScanData.wallCount == 1 ? "" : "s")})";
+            if (int.TryParse(item.title.Substring("Room ".Length), out int roomNumber))
+                highestRoomNumber = Math.Max(highestRoomNumber, roomNumber);
+        }
 
-        if (roomScanData.floorCount > 0)
-            return $"Saved Room ({roomScanData.floorCount} Floor{(roomScanData.floorCount == 1 ? "" : "s")})";
-
-        return "Saved Room";
+        return $"Room {highestRoomNumber + 1}";
     }
 
     void Save()

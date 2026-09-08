@@ -9,7 +9,7 @@ public class LibraryScreenController : ScreenBase
     [SerializeField] Transform listRoot;
     [SerializeField] LibraryItemCard cardPrefab;
 
-    string currentCategory = "rooms";
+    string currentCategory = "all";
     readonly List<LibraryItemCard> cards = new List<LibraryItemCard>();
 
     void Awake()
@@ -18,9 +18,9 @@ public class LibraryScreenController : ScreenBase
         {
             var existing = transform.Find("ListRoot");
             listRoot = existing != null ? existing : transform;
+        }
 
         ConfigureLayout();
-        }
     }
 
     void OnEnable()
@@ -60,7 +60,8 @@ public class LibraryScreenController : ScreenBase
         VerticalLayoutGroup layout = GetComponent<VerticalLayoutGroup>();
         if (layout != null)
         {
-            layout.padding = new RectOffset(24, 24, 28, 116);
+            // MainShell already reserves space for its bottom navigation.
+            layout.padding = new RectOffset(24, 24, 28, 28);
             layout.spacing = 14f;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
@@ -75,7 +76,11 @@ public class LibraryScreenController : ScreenBase
                 headerImage.color = new Color(0.055f, 0.36f, 0.34f, 1f);
             LayoutElement headerLayout = header.GetComponent<LayoutElement>();
             if (headerLayout != null)
-                headerLayout.preferredHeight = 92f;
+            {
+                headerLayout.minHeight = 82f;
+                headerLayout.preferredHeight = 82f;
+                headerLayout.flexibleHeight = 0f;
+            }
 
             TextMeshProUGUI title = header.Find("Title")?.GetComponent<TextMeshProUGUI>();
             if (title != null)
@@ -102,25 +107,75 @@ public class LibraryScreenController : ScreenBase
         if (listRoot == null)
             return;
 
-        LayoutElement listLayoutElement = listRoot.GetComponent<LayoutElement>();
-        if (listLayoutElement == null)
-            listLayoutElement = listRoot.gameObject.AddComponent<LayoutElement>();
-        listLayoutElement.flexibleHeight = 1f;
+        ConfigureScrollableList();
 
         VerticalLayoutGroup listLayout = listRoot.GetComponent<VerticalLayoutGroup>();
         if (listLayout != null)
         {
+            listLayout.padding = new RectOffset(0, 0, 0, 16);
             listLayout.spacing = 14f;
             listLayout.childControlWidth = true;
             listLayout.childControlHeight = true;
             listLayout.childForceExpandHeight = false;
         }
+
+        LayoutElement listLayoutElement = listRoot.GetComponent<LayoutElement>();
+        if (listLayoutElement == null)
+            listLayoutElement = listRoot.gameObject.AddComponent<LayoutElement>();
+        listLayoutElement.flexibleHeight = 0f;
+
+        ContentSizeFitter contentFitter = listRoot.GetComponent<ContentSizeFitter>();
+        if (contentFitter == null)
+            contentFitter = listRoot.gameObject.AddComponent<ContentSizeFitter>();
+        contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+    }
+
+    void ConfigureScrollableList()
+    {
+        RectTransform listRect = listRoot as RectTransform;
+        if (listRect == null)
+            return;
+
+        Transform existingViewport = transform.Find("LibraryScrollViewport");
+        GameObject viewport = existingViewport != null ? existingViewport.gameObject : null;
+        if (viewport == null)
+        {
+            viewport = new GameObject("LibraryScrollViewport", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D), typeof(ScrollRect), typeof(LayoutElement));
+            viewport.transform.SetParent(listRoot.parent, false);
+            viewport.transform.SetSiblingIndex(listRoot.GetSiblingIndex());
+            listRoot.SetParent(viewport.transform, false);
+        }
+
+        RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+        Image viewportImage = viewport.GetComponent<Image>();
+        viewportImage.color = new Color(1f, 0.992f, 0.965f, 1f);
+        viewportImage.raycastTarget = true;
+
+        LayoutElement viewportLayout = viewport.GetComponent<LayoutElement>();
+        viewportLayout.flexibleHeight = 1f;
+        viewportLayout.minHeight = 180f;
+
+        listRect.anchorMin = new Vector2(0f, 1f);
+        listRect.anchorMax = new Vector2(1f, 1f);
+        listRect.pivot = new Vector2(0.5f, 1f);
+        listRect.anchoredPosition = Vector2.zero;
+        listRect.offsetMin = new Vector2(0f, listRect.offsetMin.y);
+        listRect.offsetMax = new Vector2(0f, listRect.offsetMax.y);
+
+        ScrollRect scrollRect = viewport.GetComponent<ScrollRect>();
+        scrollRect.viewport = viewportRect;
+        scrollRect.content = listRect;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 28f;
     }
 
     void EnsureHeaderText(Transform header)
     {
-        CreateHeaderText(header, "LibraryHeaderTitle", "Library", 25f, FontStyles.Bold, new Color(0.98f, 0.96f, 0.91f, 1f), new Vector2(20f, 30f), new Vector2(-20f, -8f));
-        CreateHeaderText(header, "LibraryHeaderSubtitle", "Saved room scans and design concepts", 12f, FontStyles.Normal, new Color(0.88f, 0.95f, 0.92f, 1f), new Vector2(20f, 4f), new Vector2(-20f, -42f));
+        CreateHeaderText(header, "LibraryHeaderTitle", "Library", 25f, FontStyles.Bold, new Color(0.98f, 0.96f, 0.91f, 1f), new Vector2(20f, 25f), new Vector2(-20f, -8f));
+        CreateHeaderText(header, "LibraryHeaderSubtitle", "Saved room scans and design concepts", 12f, FontStyles.Normal, new Color(0.88f, 0.95f, 0.92f, 1f), new Vector2(20f, 4f), new Vector2(-20f, -35f));
     }
 
     void CreateHeaderText(Transform parent, string name, string value, float size, FontStyles style, Color color, Vector2 offsetMin, Vector2 offsetMax)
@@ -163,8 +218,8 @@ public class LibraryScreenController : ScreenBase
         HorizontalLayoutGroup layout = filterBar.GetComponent<HorizontalLayoutGroup>();
         if (layout != null)
         {
-            layout.padding = new RectOffset(8, 8, 10, 10);
-            layout.spacing = 6f;
+            layout.padding = new RectOffset(8, 8, 7, 7);
+            layout.spacing = 5f;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
@@ -175,7 +230,15 @@ public class LibraryScreenController : ScreenBase
         if (filterImage != null)
             filterImage.color = new Color(1f, 0.992f, 0.965f, 1f);
 
+        LayoutElement filterLayout = filterBar.GetComponent<LayoutElement>();
+        if (filterLayout == null)
+            filterLayout = filterBar.gameObject.AddComponent<LayoutElement>();
+        filterLayout.minHeight = 52f;
+        filterLayout.preferredHeight = 52f;
+        filterLayout.flexibleHeight = 0f;
+
         string[] labels = { "All", "Saved Rooms", "AI Designs", "Favorites" };
+        string[] icons = { "\uf00a", "\uf52b", "\uf0d0", "\uf005" };
         Button[] buttons = filterBar.GetComponentsInChildren<Button>(true);
         for (int i = 0; i < buttons.Length && i < labels.Length; i++)
         {
@@ -188,25 +251,82 @@ public class LibraryScreenController : ScreenBase
 
             TextMeshProUGUI label = buttons[i].GetComponentInChildren<TextMeshProUGUI>(true);
             Image buttonImage = buttons[i].GetComponent<Image>();
-            if (buttonImage != null)
-                buttonImage.color = i == 1 ? new Color(0.93f, 0.86f, 0.73f, 1f) : new Color(0.82f, 0.91f, 0.87f, 1f);
             if (label == null)
                 continue;
 
             label.text = labels[i];
-            label.fontSize = 11f;
+            label.fontSize = 9f;
             label.fontStyle = FontStyles.Bold;
             label.color = new Color(0.075f, 0.118f, 0.145f, 1f);
             label.enableWordWrapping = false;
             label.overflowMode = TextOverflowModes.Ellipsis;
-            label.alignment = TextAlignmentOptions.Center;
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+
+            RectTransform labelRect = label.rectTransform;
+            labelRect.anchorMin = new Vector2(0.30f, 0f);
+            labelRect.anchorMax = new Vector2(0.96f, 1f);
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+
+            EnsureFilterIcon(buttons[i].transform, icons[i], label.color);
         }
+
+        UpdateFilterSelection();
+    }
+
+    static void EnsureFilterIcon(Transform button, string glyph, Color color)
+    {
+        Transform existing = button.Find("FilterIcon");
+        TextMeshProUGUI icon = existing != null ? existing.GetComponent<TextMeshProUGUI>() : null;
+        if (icon == null)
+        {
+            GameObject iconObject = new GameObject("FilterIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            iconObject.transform.SetParent(button, false);
+            icon = iconObject.GetComponent<TextMeshProUGUI>();
+        }
+
+        RectTransform iconRect = icon.rectTransform;
+        iconRect.anchorMin = new Vector2(0.07f, 0f);
+        iconRect.anchorMax = new Vector2(0.25f, 1f);
+        iconRect.offsetMin = Vector2.zero;
+        iconRect.offsetMax = Vector2.zero;
+        icon.font = FontAwesomeIcons.FontAsset;
+        icon.text = glyph;
+        icon.color = color;
+        icon.fontSize = 12f;
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.enableWordWrapping = false;
+        icon.raycastTarget = false;
+        icon.transform.SetAsFirstSibling();
     }
 
     void ShowCategory(string category)
     {
         currentCategory = category;
+        UpdateFilterSelection();
         Refresh();
+    }
+
+    void UpdateFilterSelection()
+    {
+        Transform filterBar = transform.Find("LibraryTabs");
+        if (filterBar == null)
+            return;
+
+        int activeIndex = currentCategory == "rooms" ? 1
+            : currentCategory == "concepts" ? 2
+            : currentCategory == "favorites" ? 3
+            : 0;
+
+        Button[] buttons = filterBar.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length && i < 4; i++)
+        {
+            Image buttonImage = buttons[i].GetComponent<Image>();
+            if (buttonImage != null)
+                buttonImage.color = i == activeIndex
+                    ? new Color(0.93f, 0.86f, 0.73f, 1f)
+                    : new Color(0.82f, 0.91f, 0.87f, 1f);
+        }
     }
 
     void Refresh()
@@ -216,6 +336,10 @@ public class LibraryScreenController : ScreenBase
             if (card != null)
                 Destroy(card.gameObject);
         }
+
+        Transform emptyState = listRoot != null ? listRoot.Find("LibraryEmptyState") : null;
+        if (emptyState != null)
+            Destroy(emptyState.gameObject);
 
         cards.Clear();
 
@@ -227,11 +351,20 @@ public class LibraryScreenController : ScreenBase
             items = new List<LibraryItem>(LibraryDataManager.Instance.GetAll());
         else if (currentCategory == "favorites")
             items = LibraryDataManager.Instance.GetFavorites();
+        else if (currentCategory == "concepts")
+        {
+            // Existing mock concepts and generated AI designs use different legacy keys.
+            items = LibraryDataManager.Instance.GetByCategory("concepts");
+            items.AddRange(LibraryDataManager.Instance.GetByCategory("designs"));
+        }
         else
             items = LibraryDataManager.Instance.GetByCategory(currentCategory);
 
         if (items.Count == 0)
-            items = new List<LibraryItem>(LibraryDataManager.Instance.GetAll());
+        {
+            CreateEmptyState();
+            return;
+        }
 
         foreach (LibraryItem item in items)
         {
@@ -239,10 +372,69 @@ public class LibraryScreenController : ScreenBase
                 ? Instantiate(cardPrefab, listRoot)
                 : RuntimeUIFactory.CreateLibraryCard(listRoot);
 
-            card.Bind(item);
+            LayoutElement cardLayout = card.GetComponent<LayoutElement>();
+            if (cardLayout == null)
+                cardLayout = card.gameObject.AddComponent<LayoutElement>();
+            cardLayout.minHeight = 184f;
+            cardLayout.preferredHeight = 184f;
+            cardLayout.flexibleHeight = 0f;
+
+            Image cardImage = card.GetComponent<Image>();
+            if (cardImage != null)
+                cardImage.color = new Color(0.92f, 0.94f, 0.93f, 1f);
+
+            card.Bind(item, GetDisplayTitle(item));
             cards.Add(card);
         }
 
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(listRoot as RectTransform);
+        ScrollRect scrollRect = transform.Find("LibraryScrollViewport")?.GetComponent<ScrollRect>();
+        if (scrollRect != null)
+            scrollRect.verticalNormalizedPosition = 1f;
+    }
+
+    void CreateEmptyState()
+    {
+        GameObject empty = new GameObject("LibraryEmptyState", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(LayoutElement));
+        empty.transform.SetParent(listRoot, false);
+        empty.GetComponent<Image>().color = new Color(0.92f, 0.94f, 0.93f, 1f);
+        LayoutElement layout = empty.GetComponent<LayoutElement>();
+        layout.preferredHeight = 140f;
+        layout.flexibleHeight = 0f;
+
+        GameObject messageObject = new GameObject("Message", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        messageObject.transform.SetParent(empty.transform, false);
+        TextMeshProUGUI message = messageObject.GetComponent<TextMeshProUGUI>();
+        TMP_FontAsset font = CoZeeTypography.FontFor("LibraryEmptyState", 16f, FontStyles.Normal);
+        if (font != null)
+            message.font = font;
+        message.text = currentCategory == "favorites"
+            ? "No favorites yet. Tap the star on a saved room or AI design to add it here."
+            : currentCategory == "concepts"
+                ? "No AI designs saved yet. Generate a design to add it here."
+                : "No saved rooms yet. Complete a room scan to add one here.";
+        message.fontSize = 16f;
+        message.color = new Color(0.30f, 0.38f, 0.40f, 1f);
+        message.alignment = TextAlignmentOptions.Center;
+        message.enableWordWrapping = true;
+        message.rectTransform.anchorMin = new Vector2(0.08f, 0.15f);
+        message.rectTransform.anchorMax = new Vector2(0.92f, 0.85f);
+        message.rectTransform.offsetMin = Vector2.zero;
+        message.rectTransform.offsetMax = Vector2.zero;
+    }
+
+    string GetDisplayTitle(LibraryItem item)
+    {
+        if (item == null || item.category != "rooms" || LibraryDataManager.Instance == null)
+            return item != null ? item.title : string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(item.title) && item.title.StartsWith("Room "))
+            return item.title;
+
+        List<LibraryItem> rooms = LibraryDataManager.Instance.GetByCategory("rooms");
+        int roomIndex = rooms.FindIndex(room => room.id == item.id);
+        return roomIndex >= 0 ? $"Room {roomIndex + 1}" : item.title;
     }
 
     public void ShowRoomDetails(LibraryItem item)
@@ -263,6 +455,7 @@ public class LibraryScreenController : ScreenBase
 
         GameObject card = new GameObject("DetailsCard", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(VerticalLayoutGroup));
         card.transform.SetParent(overlay.transform, false);
+        card.GetComponent<Image>().color = new Color(0.98f, 0.985f, 0.975f, 1f);
         RectTransform cardRect = card.GetComponent<RectTransform>();
         cardRect.anchorMin = new Vector2(0.06f, 0.16f);
         cardRect.anchorMax = new Vector2(0.94f, 0.84f);
@@ -277,7 +470,7 @@ public class LibraryScreenController : ScreenBase
         cardLayout.childControlHeight = true;
         cardLayout.childForceExpandHeight = false;
 
-        CreateDetailText(card.transform, "DetailsTitle", item.title, 23f, FontStyles.Bold, new Color(0.075f, 0.118f, 0.145f, 1f), 34f);
+        CreateDetailText(card.transform, "DetailsTitle", GetDisplayTitle(item), 23f, FontStyles.Bold, new Color(0.075f, 0.118f, 0.145f, 1f), 34f);
         string summary = item.roomScanData != null && !string.IsNullOrWhiteSpace(item.roomScanData.summary)
             ? item.roomScanData.summary
             : string.IsNullOrWhiteSpace(item.detailsText) ? "Saved room" : item.detailsText;
@@ -287,9 +480,7 @@ public class LibraryScreenController : ScreenBase
         {
             foreach (ScannedSurfaceRecord surface in item.roomScanData.surfaces)
             {
-                string secondLabel = surface.surfaceType == "Wall" ? "Height" : "Length";
-                string line = $"{surface.label} ({surface.surfaceType})  |  Width {surface.primaryDimensionMeters:F2}m  |  {secondLabel} {surface.secondaryDimensionMeters:F2}m";
-                CreateDetailText(card.transform, "SurfaceDetail", line, 13f, FontStyles.Normal, new Color(0.075f, 0.118f, 0.145f, 1f), 28f);
+                CreateSurfaceDetailRow(card.transform, surface);
             }
         }
         else
@@ -333,10 +524,43 @@ public class LibraryScreenController : ScreenBase
     {
         GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
         buttonObject.transform.SetParent(parent, false);
+        buttonObject.GetComponent<Image>().color = new Color(0.055f, 0.36f, 0.34f, 1f);
         buttonObject.GetComponent<LayoutElement>().preferredHeight = 46f;
-        TextMeshProUGUI text = CreateDetailText(buttonObject.transform, "Label", label, 15f, FontStyles.Bold, new Color(0.075f, 0.118f, 0.145f, 1f), 0f);
+        TextMeshProUGUI text = CreateDetailText(buttonObject.transform, "Label", label, 15f, FontStyles.Bold, Color.white, 0f);
         Stretch(text.rectTransform);
         text.alignment = TextAlignmentOptions.Center;
         return buttonObject;
+    }
+
+    static void CreateSurfaceDetailRow(Transform parent, ScannedSurfaceRecord surface)
+    {
+        GameObject row = new GameObject("SurfaceDetail", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(LayoutElement));
+        row.transform.SetParent(parent, false);
+        row.GetComponent<Image>().color = new Color(0.90f, 0.94f, 0.92f, 1f);
+        row.GetComponent<LayoutElement>().preferredHeight = 62f;
+
+        string secondLabel = surface.surfaceType == "Wall" ? "Height" : "Length";
+        CreateSurfaceText(row.transform, "Label", $"{surface.label}  •  {surface.surfaceType}", 12f, FontStyles.Bold, new Vector2(0.06f, 0.54f), new Vector2(0.94f, 0.92f));
+        CreateSurfaceText(row.transform, "Primary", $"Width  {surface.primaryDimensionMeters:F2} m", 12f, FontStyles.Normal, new Vector2(0.06f, 0.10f), new Vector2(0.48f, 0.50f));
+        CreateSurfaceText(row.transform, "Secondary", $"{secondLabel}  {surface.secondaryDimensionMeters:F2} m", 12f, FontStyles.Normal, new Vector2(0.52f, 0.10f), new Vector2(0.94f, 0.50f));
+    }
+
+    static void CreateSurfaceText(Transform parent, string name, string value, float size, FontStyles style, Vector2 anchorMin, Vector2 anchorMax)
+    {
+        GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        TMP_FontAsset font = CoZeeTypography.FontFor(name, size, style);
+        if (font != null)
+            text.font = font;
+        text.text = value;
+        text.fontSize = size;
+        text.fontStyle = style;
+        text.color = new Color(0.075f, 0.118f, 0.145f, 1f);
+        text.alignment = TextAlignmentOptions.MidlineLeft;
+        text.rectTransform.anchorMin = anchorMin;
+        text.rectTransform.anchorMax = anchorMax;
+        text.rectTransform.offsetMin = Vector2.zero;
+        text.rectTransform.offsetMax = Vector2.zero;
     }
 }

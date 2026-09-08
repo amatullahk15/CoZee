@@ -30,12 +30,12 @@ public class LibraryItemCard : MonoBehaviour
         }
     }
 
-    public void Bind(LibraryItem item)
+    public void Bind(LibraryItem item, string displayTitle = null)
     {
         boundItem = item;
 
         if (titleText != null)
-            titleText.text = item.title;
+            titleText.text = string.IsNullOrWhiteSpace(displayTitle) ? item.title : displayTitle;
 
         if (categoryText != null)
         {

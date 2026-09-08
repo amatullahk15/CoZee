@@ -44,6 +44,12 @@ public class FavoriteToggle : MonoBehaviour
     void RefreshVisual()
     {
         if (iconText != null)
-            iconText.text = isFavorite ? "★" : "☆";
+        {
+            iconText.font = FontAwesomeIcons.FontAsset;
+            iconText.text = "\uf005";
+            iconText.color = isFavorite
+                ? new Color(0.85f, 0.57f, 0.12f, 1f)
+                : new Color(0.075f, 0.118f, 0.145f, 1f);
+        }
     }
 }
