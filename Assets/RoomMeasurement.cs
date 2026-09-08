@@ -7,14 +7,23 @@ using UnityEngine.XR.ARSubsystems;
 
 public class RoomMeasurement : MonoBehaviour
 {
+    const float FloorNormalMinimum = 0.85f;
+    const float WallNormalMaximum = 0.35f;
+    const float MinimumSurfaceAreaSquareMeters = 0.12f;
+    const float MinimumSurfaceDimensionMeters = 0.25f;
+    const float MinimumScanSeconds = 0.5f;
+
     public TextMeshProUGUI distanceText;
 
     ARPlaneManager planeManager;
+    ARRaycastManager raycastManager;
     Camera cachedCamera;
     readonly List<ScannedSurfaceRecord> scanHistory = new List<ScannedSurfaceRecord>();
+    readonly List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
 
-    ARPlane bestPlaneDuringScan;
-    float bestPlaneScore;
+    // A session is intentionally locked to one plane so a later scan cannot reuse a prior surface.
+    ARPlane scannedPlane;
+    float scanStartedAt;
     bool startButtonArmed;
     int wallCount;
     int floorCount;
@@ -22,7 +31,7 @@ public class RoomMeasurement : MonoBehaviour
     // Made public so PlaceObject can access it
     public int tapCount = 0;
     public bool IsScanning { get; private set; }
-    public bool HasDetectedSurface => GetBestVisiblePlane() != null;
+    public bool HasDetectedSurface => GetTargetedPlane() != null;
     public bool HasCompletedScan => scanHistory.Count > 0;
     public bool CanPlaceFurniture => HasCompletedScan && !IsScanning;
     public IReadOnlyList<ScannedSurfaceRecord> ScanHistory => scanHistory;
@@ -41,7 +50,7 @@ public class RoomMeasurement : MonoBehaviour
             startButtonArmed = true;
 
         if (IsScanning)
-            UpdateBestPlaneCandidate();
+            UpdateScannedPlane();
 
         RefreshStatusText();
     }
@@ -51,13 +60,16 @@ public class RoomMeasurement : MonoBehaviour
         if (planeManager == null)
             planeManager = GetComponent<ARPlaneManager>() ?? FindObjectOfType<ARPlaneManager>();
 
+        if (raycastManager == null)
+            raycastManager = GetComponent<ARRaycastManager>() ?? FindObjectOfType<ARRaycastManager>();
+
         if (cachedCamera == null)
             cachedCamera = Camera.main ?? Camera.current;
     }
 
     public bool CanStartScan()
     {
-        return !IsScanning && HasDetectedSurface;
+        return !IsScanning && GetTargetedPlane() != null;
     }
 
     public void StartScan()
@@ -65,10 +77,12 @@ public class RoomMeasurement : MonoBehaviour
         if (!CanStartScan())
             return;
 
+        scannedPlane = ResolveCurrentPlane(GetTargetedPlane());
+        if (scannedPlane == null)
+            return;
+
         IsScanning = true;
-        bestPlaneDuringScan = null;
-        bestPlaneScore = 0f;
-        UpdateBestPlaneCandidate();
+        scanStartedAt = Time.time;
         RefreshStatusText();
     }
 
@@ -79,20 +93,25 @@ public class RoomMeasurement : MonoBehaviour
 
         IsScanning = false;
 
-        if (bestPlaneDuringScan == null)
+        scannedPlane = ResolveCurrentPlane(scannedPlane);
+        if (!IsUsablePlane(scannedPlane)
+            || !IsLargeEnough(scannedPlane)
+            || Time.time - scanStartedAt < MinimumScanSeconds)
         {
+            scannedPlane = null;
             RefreshStatusText();
             return false;
         }
 
-        Vector2 size = bestPlaneDuringScan.size;
-        float primary = Mathf.Max(size.x, size.y);
-        float secondary = Mathf.Min(size.x, size.y);
+        // The tracked plane's final extent belongs only to this start/stop session.
+        Vector2 size = scannedPlane.size;
+        float primary = size.x;
+        float secondary = size.y;
         float area = Mathf.Max(0f, size.x * size.y);
 
-        bool isVertical = IsVertical(bestPlaneDuringScan.alignment);
-        string surfaceType = isVertical ? "Wall" : "Floor";
-        string label = isVertical
+        bool isWall = IsWall(scannedPlane);
+        string surfaceType = isWall ? "Wall" : "Floor";
+        string label = isWall
             ? $"Wall {++wallCount}"
             : $"Floor {++floorCount}";
 
@@ -107,6 +126,7 @@ public class RoomMeasurement : MonoBehaviour
 
         // Preserve the previous gate expected by placement scripts.
         tapCount = 3;
+        scannedPlane = null;
 
         RefreshStatusText();
         return true;
@@ -115,7 +135,15 @@ public class RoomMeasurement : MonoBehaviour
     public string GetStatusText()
     {
         if (IsScanning)
-            return "Scanning current surface... tap Stop Scan when the wall or floor is fully mapped.";
+        {
+            if (scannedPlane == null)
+                return "Tracking was lost. Aim the center marker at the same wall or floor.";
+
+            string surface = IsWall(scannedPlane) ? "wall" : "floor";
+            return IsLargeEnough(scannedPlane) && Time.time - scanStartedAt >= MinimumScanSeconds
+                ? $"Scanning this {surface}. Tap Stop Scan to save its dimensions."
+                : $"Scanning this {surface}. Keep the camera steady until the surface is fully tracked.";
+        }
 
         if (!startButtonArmed)
             return "Move the camera until a wall or floor is detected.";
@@ -136,12 +164,8 @@ public class RoomMeasurement : MonoBehaviour
         var lines = new List<string>(scanHistory.Count);
         foreach (ScannedSurfaceRecord record in scanHistory)
         {
-            string dimensionNames = record.surfaceType == "Wall"
-                ? "width x height"
-                : "width x length";
-
-            lines.Add(
-                $"{record.label}: {record.primaryDimensionMeters:F2}m x {record.secondaryDimensionMeters:F2}m ({dimensionNames})");
+            string secondLabel = record.surfaceType == "Wall" ? "Height" : "Length";
+            lines.Add($"{record.label}: Width {record.primaryDimensionMeters:F2}m | {secondLabel} {record.secondaryDimensionMeters:F2}m");
         }
 
         return string.Join("\n", lines);
@@ -220,7 +244,7 @@ public class RoomMeasurement : MonoBehaviour
             if (plane == null || plane.trackingState != TrackingState.Tracking)
                 continue;
 
-            if (!IsSupportedAlignment(plane.alignment))
+            if (!IsUsablePlane(plane))
                 continue;
 
             float score = ScorePlane(plane);
@@ -234,18 +258,44 @@ public class RoomMeasurement : MonoBehaviour
         return bestPlane;
     }
 
-    void UpdateBestPlaneCandidate()
+    ARPlane GetTargetedPlane()
     {
-        ARPlane visiblePlane = GetBestVisiblePlane();
-        if (visiblePlane == null)
-            return;
-
-        float score = ScorePlane(visiblePlane);
-        if (bestPlaneDuringScan == null || score >= bestPlaneScore)
+        if (raycastManager != null)
         {
-            bestPlaneDuringScan = visiblePlane;
-            bestPlaneScore = score;
+            raycastHits.Clear();
+            Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            if (raycastManager.Raycast(screenCenter, raycastHits, TrackableType.PlaneWithinPolygon))
+            {
+                foreach (ARRaycastHit hit in raycastHits)
+                {
+                    ARPlane plane = ResolveCurrentPlane(hit.trackable as ARPlane);
+                    if (IsUsablePlane(plane))
+                        return plane;
+                }
+            }
         }
+
+        return GetBestVisiblePlane();
+    }
+
+    void UpdateScannedPlane()
+    {
+        // AR Foundation can subsume a small patch into its parent as tracking improves.
+        scannedPlane = ResolveCurrentPlane(scannedPlane);
+    }
+
+    static ARPlane ResolveCurrentPlane(ARPlane plane)
+    {
+        while (plane != null && plane.subsumedBy != null)
+            plane = plane.subsumedBy;
+        return plane;
+    }
+
+    bool IsUsablePlane(ARPlane plane)
+    {
+        return plane != null
+            && plane.trackingState == TrackingState.Tracking
+            && (IsFloor(plane) || IsWall(plane));
     }
 
     float ScorePlane(ARPlane plane)
@@ -270,16 +320,27 @@ public class RoomMeasurement : MonoBehaviour
         return area * Mathf.Lerp(0.35f, 1.25f, facing) / distance;
     }
 
-    bool IsSupportedAlignment(PlaneAlignment alignment)
+    static bool IsFloor(ARPlane plane)
     {
-        return IsVertical(alignment)
-            || alignment == PlaneAlignment.HorizontalDown
-            || alignment == PlaneAlignment.HorizontalUp;
+        return plane != null
+            && Mathf.Abs(Vector3.Dot(plane.transform.up.normalized, Vector3.up)) >= FloorNormalMinimum;
     }
 
-    bool IsVertical(PlaneAlignment alignment)
+    static bool IsWall(ARPlane plane)
     {
-        return alignment == PlaneAlignment.Vertical;
+        return plane != null
+            && Mathf.Abs(Vector3.Dot(plane.transform.up.normalized, Vector3.up)) <= WallNormalMaximum;
+    }
+
+    static bool IsLargeEnough(ARPlane plane)
+    {
+        if (plane == null)
+            return false;
+
+        Vector2 size = plane.size;
+        return size.x >= MinimumSurfaceDimensionMeters
+            && size.y >= MinimumSurfaceDimensionMeters
+            && size.x * size.y >= MinimumSurfaceAreaSquareMeters;
     }
 
     void RefreshStatusText()
