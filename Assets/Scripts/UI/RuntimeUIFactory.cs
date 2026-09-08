@@ -66,6 +66,7 @@ public static class RuntimeUIFactory
 
         var openBtn = CreateButton(go.transform, "Open", "Open details", SurfaceElevated, TextWhite, 48f);
         Anchor(openBtn.GetComponent<RectTransform>(), new Vector2(0.06f, 0.10f), new Vector2(0.47f, 0.34f));
+        AddInlineButtonIcon(openBtn, "\uf06e", TextWhite); // eye
         var deleteBtn = CreateButton(go.transform, "Delete", "Delete", DangerRed, Color.white, 48f);
         Anchor(deleteBtn.GetComponent<RectTransform>(), new Vector2(0.53f, 0.10f), new Vector2(0.94f, 0.34f));
 
@@ -86,6 +87,34 @@ public static class RuntimeUIFactory
         SetField(card, "deleteButton", deleteBtn.GetComponent<Button>());
         SetField(card, "favoriteToggle", favoriteToggle);
         return card;
+    }
+
+    static void AddInlineButtonIcon(GameObject buttonObject, string glyph, Color color)
+    {
+        TextMeshProUGUI label = buttonObject.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (label != null)
+        {
+            label.rectTransform.anchorMin = new Vector2(0.30f, 0f);
+            label.rectTransform.anchorMax = new Vector2(0.96f, 1f);
+            label.rectTransform.offsetMin = Vector2.zero;
+            label.rectTransform.offsetMax = Vector2.zero;
+            label.fontSize = 13f;
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+            label.enableWordWrapping = false;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+        }
+
+        GameObject iconObject = new GameObject("ButtonIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        iconObject.transform.SetParent(buttonObject.transform, false);
+        TextMeshProUGUI icon = iconObject.GetComponent<TextMeshProUGUI>();
+        icon.font = FontAwesomeIcons.FontAsset;
+        icon.text = glyph;
+        icon.color = color;
+        icon.fontSize = 14f;
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.raycastTarget = false;
+        Anchor(icon.rectTransform, new Vector2(0.08f, 0f), new Vector2(0.24f, 1f));
+        icon.transform.SetAsFirstSibling();
     }
 
     static void Anchor(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax)

@@ -527,8 +527,27 @@ public class LibraryScreenController : ScreenBase
         buttonObject.GetComponent<Image>().color = new Color(0.055f, 0.36f, 0.34f, 1f);
         buttonObject.GetComponent<LayoutElement>().preferredHeight = 46f;
         TextMeshProUGUI text = CreateDetailText(buttonObject.transform, "Label", label, 15f, FontStyles.Bold, Color.white, 0f);
-        Stretch(text.rectTransform);
-        text.alignment = TextAlignmentOptions.Center;
+        text.rectTransform.anchorMin = new Vector2(0.42f, 0f);
+        text.rectTransform.anchorMax = new Vector2(0.78f, 1f);
+        text.rectTransform.offsetMin = Vector2.zero;
+        text.rectTransform.offsetMax = Vector2.zero;
+        text.alignment = TextAlignmentOptions.MidlineLeft;
+        text.enableWordWrapping = false;
+
+        GameObject iconObject = new GameObject("CloseIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        iconObject.transform.SetParent(buttonObject.transform, false);
+        TextMeshProUGUI icon = iconObject.GetComponent<TextMeshProUGUI>();
+        icon.font = FontAwesomeIcons.FontAsset;
+        icon.text = "\uf00d"; // xmark
+        icon.color = Color.white;
+        icon.fontSize = 14f;
+        icon.alignment = TextAlignmentOptions.Center;
+        icon.raycastTarget = false;
+        icon.rectTransform.anchorMin = new Vector2(0.22f, 0f);
+        icon.rectTransform.anchorMax = new Vector2(0.38f, 1f);
+        icon.rectTransform.offsetMin = Vector2.zero;
+        icon.rectTransform.offsetMax = Vector2.zero;
+        icon.transform.SetAsFirstSibling();
         return buttonObject;
     }
 

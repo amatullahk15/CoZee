@@ -19,17 +19,25 @@ public class ScanARScreenController : ScreenBase
     Color originalBgColor = new Color(0.06f, 0.09f, 0.16f, 1f);
     bool arLoaded;
     bool arLoading;
+    bool overlayStyled;
 
     protected override void OnShow()
     {
         SetShellBackgroundTransparent(true);
+        SetBottomNavigationVisible(false);
+        SetCleanFurnitureControlsVisible(true);
+        SetScanActionTrayVisible(true);
         LoadAR();
     }
 
     protected override void OnHide()
     {
         SetShellBackgroundTransparent(false);
+        SetBottomNavigationVisible(true);
+        SetCleanFurnitureControlsVisible(false);
+        SetScanActionTrayVisible(false);
         UnloadAR();
+        overlayStyled = false;
     }
 
     void Start()
@@ -56,6 +64,9 @@ public class ScanARScreenController : ScreenBase
     {
         EnsureActionButtons();
         RefreshActionButtons();
+
+        if (!overlayStyled && arLoaded)
+            overlayStyled = ScanAROverlayStyler.Apply(transform, scanActionButton, saveRoomButton);
     }
 
     void SetShellBackgroundTransparent(bool transparent)
@@ -98,6 +109,28 @@ public class ScanARScreenController : ScreenBase
     {
         DisableDuplicateEventSystems();
         SetSampleSceneActive(true);
+        overlayStyled = false;
+    }
+
+    void SetBottomNavigationVisible(bool visible)
+    {
+        BottomNavBar bottomNav = FindObjectOfType<BottomNavBar>(true);
+        if (bottomNav != null)
+            bottomNav.gameObject.SetActive(visible);
+    }
+
+    void SetCleanFurnitureControlsVisible(bool visible)
+    {
+        Transform controls = transform.root.Find("CleanFurnitureControls");
+        if (controls != null)
+            controls.gameObject.SetActive(visible);
+    }
+
+    void SetScanActionTrayVisible(bool visible)
+    {
+        Transform tray = transform.root.Find("ScanActionTray");
+        if (tray != null)
+            tray.gameObject.SetActive(visible);
     }
 
     void DisableDuplicateEventSystems()
@@ -217,10 +250,10 @@ public class ScanARScreenController : ScreenBase
         bool canScan = bridge != null && (bridge.CanStartScan || bridge.IsScanning || bridge.IsMeasurementComplete);
         bool canSave = bridge != null && bridge.IsMeasurementComplete && !bridge.IsScanning;
 
-        scanActionButton.gameObject.SetActive(canScan);
+        scanActionButton.gameObject.SetActive(true);
         scanActionButton.interactable = bridge != null && (bridge.IsScanning || bridge.CanStartScan);
 
-        saveRoomButton.gameObject.SetActive(canSave);
+        saveRoomButton.gameObject.SetActive(true);
         saveRoomButton.interactable = canSave;
 
         if (scanActionButtonLabel != null)
@@ -232,5 +265,7 @@ public class ScanARScreenController : ScreenBase
             saveRoomButtonLabel = saveRoomButton.GetComponentInChildren<TextMeshProUGUI>(true);
         if (saveRoomButtonLabel != null)
             saveRoomButtonLabel.text = "Save Room";
+
+        ScanAROverlayStyler.UpdateActionAvailability(scanActionButton, saveRoomButton);
     }
 }

@@ -140,10 +140,12 @@ public class PlaceObject : MonoBehaviour
 
     static void EnsureCollider(GameObject obj)
     {
-        if (obj.GetComponentInChildren<Collider>(true) != null)
-            return;
+        // Imported furniture can have a collider only on a small child (such as a handle).
+        // Keep that collider, but always add a root bounds collider for reliable tapping.
+        BoxCollider collider = obj.GetComponent<BoxCollider>();
+        if (collider == null)
+            collider = obj.AddComponent<BoxCollider>();
 
-        BoxCollider collider = obj.AddComponent<BoxCollider>();
         Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(true);
         if (renderers.Length == 0)
             return;

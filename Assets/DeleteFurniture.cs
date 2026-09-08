@@ -11,16 +11,19 @@ public class DeleteFurniture : MonoBehaviour
 
     public void DeleteSelectedFurniture()
     {
+        TryDeleteSelectedFurniture();
+    }
+
+    public bool TryDeleteSelectedFurniture()
+    {
         EnsureInteraction();
         if (furnitureInteraction == null || furnitureInteraction.selectedObject == null)
-            return;
+            return false;
 
-        Destroy(furnitureInteraction.selectedObject);
-
-        furnitureInteraction.selectedObject = null;
-
-        if (furnitureInteraction.selectionRing != null)
-            furnitureInteraction.selectionRing.SetActive(false);
+        GameObject selected = furnitureInteraction.selectedObject;
+        furnitureInteraction.Deselect();
+        Destroy(selected);
+        return true;
     }
 
     void EnsureInteraction()

@@ -17,8 +17,8 @@ public class FurnitureInteraction : MonoBehaviour
 
     private ARRaycastManager raycastManager;
     private static List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    const float DoubleTapWindowSeconds = 0.35f;
-    const float DoubleTapMaxDistancePixels = 80f;
+    const float DoubleTapWindowSeconds = 0.5f;
+    const float DoubleTapMaxDistancePixels = 140f;
     float lastTapTime = -10f;
     Vector2 lastTapPosition;
 
@@ -75,7 +75,7 @@ public class FurnitureInteraction : MonoBehaviour
             return;
         }
 
-        selectedObject = obj.transform.root != null ? obj.transform.root.gameObject : obj;
+        selectedObject = obj;
 
         if (selectionRing != null)
         {
@@ -144,14 +144,15 @@ public class FurnitureInteraction : MonoBehaviour
                 Transform hitTransform = hitObject.collider.transform;
                 if (hitTransform.CompareTag("Furniture") || hitTransform.root.CompareTag("Furniture"))
                 {
-                    bool isDoubleTap = Time.unscaledTime - lastTapTime <= DoubleTapWindowSeconds
-                        && Vector2.Distance(touch.position, lastTapPosition) <= DoubleTapMaxDistancePixels;
+                    bool isDoubleTap = touch.tapCount >= 2 ||
+                        (Time.unscaledTime - lastTapTime <= DoubleTapWindowSeconds
+                        && Vector2.Distance(touch.position, lastTapPosition) <= DoubleTapMaxDistancePixels);
                     lastTapTime = Time.unscaledTime;
                     lastTapPosition = touch.position;
 
                     if (isDoubleTap)
                     {
-                        SelectObject(hitTransform.root.gameObject);
+                        SelectObject(GetFurnitureRoot(hitTransform).gameObject);
                         UIManager.Instance?.ShowToast("Furniture selected. Drag, rotate, or delete.");
                     }
                     return;
@@ -194,6 +195,17 @@ public class FurnitureInteraction : MonoBehaviour
             selectedObject.transform.localScale = new Vector3(newScale, newScale, newScale);
             UpdateSelectionRingPosition();
         }
+    }
+
+    // All model children are tagged Furniture. Walk only that tagged hierarchy so a hit
+    // resolves to the placed model, not the AR scene or session root.
+    static Transform GetFurnitureRoot(Transform hitTransform)
+    {
+        Transform furnitureRoot = hitTransform;
+        while (furnitureRoot.parent != null && furnitureRoot.parent.CompareTag("Furniture"))
+            furnitureRoot = furnitureRoot.parent;
+
+        return furnitureRoot;
     }
 
     bool IsTouchOverInteractiveUI(Touch touch)
