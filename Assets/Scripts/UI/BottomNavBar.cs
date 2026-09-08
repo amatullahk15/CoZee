@@ -19,25 +19,15 @@ public class BottomNavBar : MonoBehaviour
 
     [SerializeField] TabButton[] tabs;
 
-    // Distinct theme colors for each of the 5 navigation tabs
-    static readonly Color ColorHome = new Color(0.086f, 0.420f, 0.408f, 1f);       // #166B68 Teal
-    static readonly Color ColorHomeActive = new Color(0.110f, 0.522f, 0.506f, 1f);
-
-    static readonly Color ColorScan = new Color(0.141f, 0.341f, 0.773f, 1f);       // #2457C5 Blue
-    static readonly Color ColorScanActive = new Color(0.188f, 0.427f, 0.941f, 1f);
-
-    static readonly Color ColorDesign = new Color(0.773f, 0.231f, 0.231f, 1f);     // #C53B3B Red
-    static readonly Color ColorDesignActive = new Color(0.878f, 0.275f, 0.275f, 1f);
-
-    static readonly Color ColorVastu = new Color(0.710f, 0.294f, 0.796f, 1f);      // #B54BCB Purple
-    static readonly Color ColorVastuActive = new Color(0.784f, 0.353f, 0.878f, 1f);
-
-    static readonly Color ColorLibrary = new Color(0.235f, 0.478f, 0.176f, 1f);    // #3C7A2D Green
-    static readonly Color ColorLibraryActive = new Color(0.282f, 0.580f, 0.212f, 1f);
+    static readonly Color NavSurface = new Color(0.985f, 0.973f, 0.945f, 1f);
+    static readonly Color NavIdle = new Color(0.42f, 0.49f, 0.48f, 1f);
+    static readonly Color NavActive = new Color(0.055f, 0.36f, 0.34f, 1f);
+    static readonly Color NavActiveSurface = new Color(0.82f, 0.91f, 0.87f, 1f);
 
     void Start()
     {
         EnsureTabs();
+        ApplyNavigationPresentation();
 
         if (tabs == null || tabs.Length == 0)
         {
@@ -67,8 +57,8 @@ public class BottomNavBar : MonoBehaviour
 
     public void EnsureTabs()
     {
-        Color[] defaultNormals = new Color[] { ColorHome, ColorScan, ColorDesign, ColorVastu, ColorLibrary };
-        Color[] defaultActives = new Color[] { ColorHomeActive, ColorScanActive, ColorDesignActive, ColorVastuActive, ColorLibraryActive };
+        Color[] defaultNormals = new Color[] { NavSurface, NavSurface, NavSurface, NavSurface, NavSurface };
+        Color[] defaultActives = new Color[] { NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface };
 
         if (tabs != null && tabs.Length == 5 && tabs[0] != null && tabs[0].button != null)
         {
@@ -76,6 +66,7 @@ public class BottomNavBar : MonoBehaviour
             {
                 if (tabs[k] != null)
                 {
+                    PopulateTabReferences(tabs[k]);
                     int idx = (int)tabs[k].tab;
                     if (idx >= 0 && idx < 5)
                     {
@@ -104,28 +95,44 @@ public class BottomNavBar : MonoBehaviour
             if (index >= 0 && index < 5)
             {
                 var btn = buttons[i];
-                var indGo = btn.transform.Find("ActiveIndicator");
-                Image indImg = indGo != null ? indGo.GetComponent<Image>() : null;
-
-                var iconGo = btn.transform.Find("Icon") ?? btn.transform.Find("PillIndicator/Icon");
-                TextMeshProUGUI iconTmp = iconGo != null ? iconGo.GetComponent<TextMeshProUGUI>() : null;
-
-                var labelGo = btn.transform.Find("Label");
-                TextMeshProUGUI labelTmp = labelGo != null ? labelGo.GetComponent<TextMeshProUGUI>() : null;
-
                 tabs[index] = new TabButton
                 {
                     button = btn,
-                    buttonImage = btn.GetComponent<Image>(),
-                    activeIndicator = indImg,
-                    iconText = iconTmp,
-                    labelText = labelTmp,
                     tab = (AppTab)index,
                     normalColor = defaultNormals[index],
                     activeColor = defaultActives[index]
                 };
+                PopulateTabReferences(tabs[index]);
             }
         }
+    }
+
+    void PopulateTabReferences(TabButton tab)
+    {
+        if (tab == null || tab.button == null)
+            return;
+
+        if (tab.buttonImage == null)
+            tab.buttonImage = tab.button.GetComponent<Image>();
+
+        if (tab.activeIndicator == null)
+            tab.activeIndicator = tab.button.transform.Find("ActiveIndicator")?.GetComponent<Image>();
+
+        if (tab.iconText == null)
+        {
+            Transform icon = tab.button.transform.Find("Icon") ?? tab.button.transform.Find("PillIndicator/Icon");
+            tab.iconText = icon != null ? icon.GetComponent<TextMeshProUGUI>() : null;
+        }
+
+        if (tab.labelText == null)
+            tab.labelText = tab.button.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
+
+        LayoutElement layout = tab.button.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = tab.button.gameObject.AddComponent<LayoutElement>();
+        layout.minWidth = 0f;
+        layout.preferredWidth = 0f;
+        layout.flexibleWidth = 1f;
     }
 
     void OnDestroy()
@@ -148,8 +155,8 @@ public class BottomNavBar : MonoBehaviour
         if (tabs == null)
             return;
 
-        Color[] defaultNormals = new Color[] { ColorHome, ColorScan, ColorDesign, ColorVastu, ColorLibrary };
-        Color[] defaultActives = new Color[] { ColorHomeActive, ColorScanActive, ColorDesignActive, ColorVastuActive, ColorLibraryActive };
+        Color[] defaultNormals = new Color[] { NavSurface, NavSurface, NavSurface, NavSurface, NavSurface };
+        Color[] defaultActives = new Color[] { NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface, NavActiveSurface };
 
         for (int i = 0; i < tabs.Length; i++)
         {
@@ -186,7 +193,7 @@ public class BottomNavBar : MonoBehaviour
             if (indicator != null)
             {
                 indicator.gameObject.SetActive(active);
-                indicator.color = Color.white;
+                indicator.color = NavActive;
             }
 
             // Update Icon
@@ -198,8 +205,9 @@ public class BottomNavBar : MonoBehaviour
             }
             if (icon != null)
             {
-                icon.color = Color.white;
+                icon.color = active ? NavActive : NavIdle;
                 icon.fontStyle = active ? FontStyles.Bold : FontStyles.Normal;
+                SetVectorIconColor(icon.transform, active ? NavActive : NavIdle);
             }
 
             // Update Label
@@ -211,10 +219,132 @@ public class BottomNavBar : MonoBehaviour
             }
             if (label != null)
             {
-                label.color = active ? Color.white : new Color(1f, 1f, 1f, 0.90f);
+                label.color = active ? NavActive : NavIdle;
                 label.fontStyle = active ? FontStyles.Bold : FontStyles.Normal;
             }
         }
+    }
+
+    void ApplyNavigationPresentation()
+    {
+        Image navBackground = GetComponent<Image>();
+        if (navBackground != null)
+            navBackground.color = NavSurface;
+
+        string[] labels = { "Home", "Scan", "Design", "Vastu", "Library" };
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            TabButton tab = tabs[i];
+            if (tab == null || tab.button == null)
+                continue;
+
+            if (tab.iconText != null)
+            {
+                tab.iconText.text = string.Empty;
+                CreateVectorIcon(tab.iconText.transform, tab.tab);
+            }
+
+            if (tab.labelText != null)
+            {
+                tab.labelText.text = labels[i];
+                tab.labelText.fontSize = 11;
+                tab.labelText.enableWordWrapping = false;
+            }
+            else
+            {
+                tab.labelText = CreateLabel(tab.button.transform, labels[i]);
+            }
+        }
+    }
+
+    TextMeshProUGUI CreateLabel(Transform parent, string label)
+    {
+        GameObject labelObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        labelObject.transform.SetParent(parent, false);
+
+        RectTransform rect = labelObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 0f);
+        rect.anchorMax = new Vector2(1f, 0.42f);
+        rect.offsetMin = new Vector2(4f, 1f);
+        rect.offsetMax = new Vector2(-4f, 0f);
+
+        TextMeshProUGUI text = labelObject.GetComponent<TextMeshProUGUI>();
+        text.font = TMP_Settings.defaultFontAsset;
+        text.text = label;
+        text.fontSize = 11;
+        text.fontStyle = FontStyles.Bold;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Ellipsis;
+        text.raycastTarget = false;
+        return text;
+    }
+
+    void CreateVectorIcon(Transform parent, AppTab tab)
+    {
+        if (parent.Find("VectorIcon") != null)
+            return;
+
+        GameObject icon = new GameObject("VectorIcon", typeof(RectTransform));
+        icon.transform.SetParent(parent, false);
+        RectTransform iconRect = icon.GetComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(8f, 5f);
+        iconRect.offsetMax = new Vector2(-8f, -5f);
+
+        switch (tab)
+        {
+            case AppTab.Home:
+                AddMark(icon.transform, new Vector2(0f, -3f), new Vector2(14f, 11f));
+                AddMark(icon.transform, new Vector2(-5f, 7f), new Vector2(14f, 2.5f), 42f);
+                AddMark(icon.transform, new Vector2(5f, 7f), new Vector2(14f, 2.5f), -42f);
+                break;
+            case AppTab.ScanAR:
+                AddMark(icon.transform, new Vector2(-7f, 6f), new Vector2(7f, 2.5f));
+                AddMark(icon.transform, new Vector2(-7f, -6f), new Vector2(7f, 2.5f));
+                AddMark(icon.transform, new Vector2(7f, 6f), new Vector2(7f, 2.5f));
+                AddMark(icon.transform, new Vector2(7f, -6f), new Vector2(7f, 2.5f));
+                break;
+            case AppTab.DesignAI:
+                AddMark(icon.transform, Vector2.zero, new Vector2(11f, 11f), 45f);
+                AddMark(icon.transform, new Vector2(8f, 8f), new Vector2(4f, 4f));
+                break;
+            case AppTab.Vastu:
+                AddMark(icon.transform, Vector2.zero, new Vector2(12f, 12f), 45f);
+                AddMark(icon.transform, Vector2.zero, new Vector2(18f, 2.5f));
+                AddMark(icon.transform, Vector2.zero, new Vector2(2.5f, 18f));
+                break;
+            case AppTab.Library:
+                AddMark(icon.transform, new Vector2(-6f, 0f), new Vector2(3f, 16f));
+                AddMark(icon.transform, Vector2.zero, new Vector2(3f, 16f));
+                AddMark(icon.transform, new Vector2(6f, 0f), new Vector2(3f, 16f));
+                break;
+        }
+    }
+
+    void AddMark(Transform parent, Vector2 position, Vector2 size, float rotation = 0f)
+    {
+        GameObject mark = new GameObject("Mark", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        mark.transform.SetParent(parent, false);
+        RectTransform rect = mark.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
+        mark.GetComponent<Image>().color = NavIdle;
+        mark.GetComponent<Image>().raycastTarget = false;
+    }
+
+    void SetVectorIconColor(Transform parent, Color color)
+    {
+        Transform icon = parent.Find("VectorIcon");
+        if (icon == null)
+            return;
+
+        foreach (Image mark in icon.GetComponentsInChildren<Image>(true))
+            mark.color = color;
     }
 }
 
