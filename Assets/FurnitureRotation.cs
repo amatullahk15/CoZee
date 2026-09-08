@@ -7,8 +7,15 @@ public class FurnitureRotation : MonoBehaviour
     public bool rotateRight = false;
     public bool rotateLeft = false;
 
+    void Awake()
+    {
+        EnsureInteraction();
+    }
+
     void Update()
     {
+        EnsureInteraction();
+
         if (furnitureInteraction == null || furnitureInteraction.selectedObject == null)
             return;
 
@@ -41,5 +48,11 @@ public class FurnitureRotation : MonoBehaviour
     public void StopRotateLeft()
     {
         rotateLeft = false;
+    }
+
+    void EnsureInteraction()
+    {
+        if (furnitureInteraction == null)
+            furnitureInteraction = FindObjectOfType<FurnitureInteraction>();
     }
 }

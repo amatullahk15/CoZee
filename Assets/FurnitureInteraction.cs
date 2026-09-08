@@ -17,6 +17,10 @@ public class FurnitureInteraction : MonoBehaviour
 
     private ARRaycastManager raycastManager;
     private static List<ARRaycastHit> hits = new List<ARRaycastHit>();
+    const float DoubleTapWindowSeconds = 0.35f;
+    const float DoubleTapMaxDistancePixels = 80f;
+    float lastTapTime = -10f;
+    Vector2 lastTapPosition;
 
     void Start()
     {
@@ -132,7 +136,7 @@ public class FurnitureInteraction : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(touch.position);
         RaycastHit hitObject;
 
-        // 1. SELECT / DESELECT OBJECT ON TAP
+        // 1. SELECT OBJECT ON DOUBLE TAP. A single tap remains available for normal plane placement.
         if (touch.phase == TouchPhase.Began)
         {
             if (Physics.Raycast(ray, out hitObject))
@@ -140,23 +144,28 @@ public class FurnitureInteraction : MonoBehaviour
                 Transform hitTransform = hitObject.collider.transform;
                 if (hitTransform.CompareTag("Furniture") || hitTransform.root.CompareTag("Furniture"))
                 {
-                    SelectObject(hitTransform.root.gameObject);
-                }
-                else
-                {
-                    Deselect();
+                    bool isDoubleTap = Time.unscaledTime - lastTapTime <= DoubleTapWindowSeconds
+                        && Vector2.Distance(touch.position, lastTapPosition) <= DoubleTapMaxDistancePixels;
+                    lastTapTime = Time.unscaledTime;
+                    lastTapPosition = touch.position;
+
+                    if (isDoubleTap)
+                    {
+                        SelectObject(hitTransform.root.gameObject);
+                        UIManager.Instance?.ShowToast("Furniture selected. Drag, rotate, or delete.");
+                    }
+                    return;
                 }
             }
-            else
-            {
-                Deselect();
-            }
+
+            // Tapping an empty part of the room exits edit mode. Placement is handled by PlaceObject.
+            Deselect();
         }
 
         // 2. DRAG / MOVE OBJECT ON FLOOR
         if (selectedObject != null && touch.phase == TouchPhase.Moved && Input.touchCount == 1)
         {
-            TrackableType trackableTypes = TrackableType.PlaneWithinPolygon | TrackableType.PlaneEstimated | TrackableType.FeaturePoint;
+            TrackableType trackableTypes = TrackableType.PlaneWithinPolygon;
             if (raycastManager != null && raycastManager.Raycast(touch.position, hits, trackableTypes))
             {
                 Pose hitPose = hits[0].pose;
