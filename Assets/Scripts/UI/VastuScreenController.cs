@@ -77,15 +77,21 @@ public class VastuScreenController : ScreenBase
 
     void CheckLayout()
     {
-        UIManager.Instance?.ShowLoading(true);
-        // Simulate analysis
-        Invoke(nameof(FinishAnalysis), 1.5f);
-    }
+        // Delegate to the AI scan via VastuApiClient instead of the old stub simulation.
+        if (VastuApiClient.Instance == null)
+        {
+            UIManager.Instance?.ShowToast("VastuApiClient not found in scene.");
+            return;
+        }
 
-    void FinishAnalysis()
-    {
-        UIManager.Instance?.ShowLoading(false);
-        UIManager.Instance?.ShowToast("Vastu Analysis Updated!");
-        VastuAssistantManager.Instance?.SendUserMessage("Re-analyzing layout based on current orientation...");
+        if (VastuApiClient.Instance.IsBusy)
+        {
+            UIManager.Instance?.ShowToast("Scan already in progress…");
+            return;
+        }
+
+        // Default to livingroom; VastuDashboardView.OnScanWithAIClicked infers a better
+        // room type from the selected library item — keep this as the quick-check fallback.
+        VastuApiClient.Instance.AnalyzeCurrentRoom("livingroom");
     }
 }

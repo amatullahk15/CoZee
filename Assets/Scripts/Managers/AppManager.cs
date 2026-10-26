@@ -106,6 +106,7 @@ public class AppManager : MonoBehaviour
         EnsureManager<LibraryDataManager>("LibraryDataManager");
         EnsureManager<DesignAIManager>("DesignAIManager");
         EnsureManager<VastuAssistantManager>("VastuAssistantManager");
+        EnsureManager<VastuApiClient>("VastuApiClient");
         EnsureManager<AudioManager>("AudioManager");
     }
 

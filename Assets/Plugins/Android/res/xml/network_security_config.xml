@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    CoZee Network Security Config
+    ==============================
+    Android 9+ blocks plain HTTP (cleartext) by default.
+
+    The <base-config> below allows cleartext HTTP to ALL destinations.
+    This is intentional for a developer/testing build so the app can
+    reach the FastAPI server on any LAN IP without having to change
+    this file every time the PC gets a new DHCP address.
+
+    IMPORTANT: Tighten or remove this before any public/production release.
+    For production, remove <base-config> and list only your server's
+    HTTPS domain under a <domain-config>.
+
+    Why not use <domain> tags for IPs?
+    Android's network security config <domain> element matches DNS hostnames
+    only — it does NOT match numeric IP addresses.  The only way to allow
+    cleartext to an arbitrary LAN IP is via <base-config>.
+-->
+<network-security-config>
+    <!-- Allow cleartext (HTTP) traffic to any host, including LAN IPs. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Trust the system CA store (same as Android default). -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

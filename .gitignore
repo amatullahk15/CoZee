@@ -17,3 +17,57 @@ MemoryCaptures/
 *.pidb
 *.booproj
 *.svd
+# -- Unity asset store (auto-generated) ---------------------------------------
+Assets/AssetStoreTools*
+
+# -- IDE -----------------------------------------------------------------------
+.vs/
+*.suo
+
+# -- Python --------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments (never commit these)
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Python egg / package artifacts
+*.egg
+*.egg-info/
+dist/
+.eggs/
+
+# pip cache
+pip-log.txt
+pip-delete-this-directory.txt
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# -- Build outputs -------------------------------------------------------------
+# Pre-built APK in project root — not useful for teammates
+cubePlacement.apk
+
+# -- OS artefacts -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -- Logs & scratch ------------------------------------------------------------
+editor_run.log
+screenshot_log.txt
+
+# -- Runtime dependencies intentionally kept in Git ---------------------------
+# backend/yolov8n.pt         (6 MB)  — required at runtime; small enough for Git
+# vastu_complete_dataset.xlsx (21 KB) — required by rule_engine.py
+# Assets/Models/renovision.onnx — verify exact Git blob size before pushing;
+#   GitHub hard limit is 100 MB per file. Run: git ls-files -s Assets/Models/renovision.onnx

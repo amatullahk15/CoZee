@@ -1,10 +1,19 @@
 from ultralytics import YOLO
 import cv2
+import os
 
 class FurnitureDetector:
 
     def __init__(self):
-        self.model = YOLO("yolov8n.pt")
+        # Resolve model path relative to this file so it works regardless of
+        # the current working directory (important when api.py imports from root).
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _candidates = [
+            os.path.join(_here, "yolov8n.pt"),
+            os.path.join(_here, "backend", "yolov8n.pt"),
+        ]
+        _model_path = next((p for p in _candidates if os.path.isfile(p)), "yolov8n.pt")
+        self.model = YOLO(_model_path)
 
     def detect(self, image_path):
 

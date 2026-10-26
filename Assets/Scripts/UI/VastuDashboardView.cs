@@ -27,6 +27,7 @@ public class VastuDashboardView : MonoBehaviour
     TextMeshProUGUI directionSummary;
     TMP_InputField questionInput;
     bool built;
+    bool apiClientSubscribed;
 
     public void Build()
     {
@@ -94,14 +95,37 @@ public class VastuDashboardView : MonoBehaviour
         if (VastuAssistantManager.Instance != null)
             VastuAssistantManager.Instance.OnMessageAdded += OnMessageAdded;
 
+        // VastuApiClient may not exist yet at Build() time (AppManager spawns it
+        // after scene load).  TrySubscribeToApiClient() is retried from Update().
+        TrySubscribeToApiClient();
+
         RefreshRooms();
         RefreshAssistant();
+    }
+
+    void Update()
+    {
+        // Retry each frame until VastuApiClient.Instance is available.
+        if (built && !apiClientSubscribed)
+            TrySubscribeToApiClient();
+    }
+
+    void TrySubscribeToApiClient()
+    {
+        if (apiClientSubscribed || VastuApiClient.Instance == null)
+            return;
+        VastuApiClient.Instance.OnAnalysisComplete += OnApiAnalysisComplete;
+        apiClientSubscribed = true;
+        Debug.Log("[VastuDashboardView] Subscribed to VastuApiClient.OnAnalysisComplete.");
     }
 
     void OnDestroy()
     {
         if (VastuAssistantManager.Instance != null)
             VastuAssistantManager.Instance.OnMessageAdded -= OnMessageAdded;
+
+        if (VastuApiClient.Instance != null)
+            VastuApiClient.Instance.OnAnalysisComplete -= OnApiAnalysisComplete;
     }
 
     public void RefreshRooms()
@@ -215,8 +239,8 @@ public class VastuDashboardView : MonoBehaviour
         GameObject card = Card(parent, "VastuScore", 142f);
         VerticalLayoutGroup layout = Stack(card, 18, 18, 7f);
         Text(card.transform, "SectionTitle", "3. Vastu score", 19, FontStyles.Bold, Ink);
-        scoreValue = Text(card.transform, "Score", "-- / 100", 30, FontStyles.Bold, Teal);
-        scoreStatus = Text(card.transform, "ScoreStatus", "Select a saved room to see its layout readiness.", 14, FontStyles.Normal, Muted);
+        scoreValue  = Text(card.transform, "Score", "-- / 100", 30, FontStyles.Bold, Teal);
+        scoreStatus = Text(card.transform, "ScoreStatus", "Tap \"Scan with AI\" to get a real AI-powered score.", 14, FontStyles.Normal, Muted);
     }
 
     void BuildActions(Transform parent)
@@ -229,40 +253,132 @@ public class VastuDashboardView : MonoBehaviour
         layout.childControlHeight = true;
         layout.childForceExpandHeight = false;
         LayoutElement sectionSize = section.AddComponent<LayoutElement>();
-        sectionSize.preferredHeight = 286f;
+        sectionSize.preferredHeight = 356f;  // Slightly taller to fit the new button
 
         Text(section.transform, "SectionTitle", "Priority actions", 21, FontStyles.Bold, Cream);
         AddAction(section.transform, "Keep the northeast open", "Use this zone for light, movement, and less visual clutter.", Sand);
         AddAction(section.transform, "Place heavy furniture southwest", "A sofa or storage unit is best kept toward the south or west where possible.", Mint);
         AddAction(section.transform, "Confirm the entrance", "For a detailed recommendation, ask the assistant where your entry sits.", Mint);
+
+        // ── Scan with AI button ────────────────────────────────────────────
+        // Calls VastuApiClient → FastAPI backend → InjectApiResults into chat.
+        // The room type comes from the currently selected room's name
+        // (falls back to "livingroom" if nothing is selected yet).
+        Button scanBtn = Button(section.transform, "ScanWithAI", "Scan with AI", Teal, Cream, 50f);
+        scanBtn.onClick.AddListener(OnScanWithAIClicked);
     }
+
+    void OnScanWithAIClicked()
+    {
+        if (VastuApiClient.Instance == null)
+        {
+            UIManager.Instance?.ShowToast(
+                "VastuApiClient not in scene. AppManager should create it automatically — " +
+                "check that AppManager is in your Bootstrap scene.");
+            return;
+        }
+
+        if (VastuApiClient.Instance.IsBusy)
+        {
+            UIManager.Instance?.ShowToast("Scan already in progress…");
+            return;
+        }
+
+        // Infer room type from selected library room name, fall back to livingroom.
+        string roomType = "livingroom";
+        if (selectedRoom != null && !string.IsNullOrEmpty(selectedRoom.title))
+        {
+            string t = selectedRoom.title.ToLowerInvariant().Replace(" ", "");
+            if      (t.Contains("bed"))   roomType = "bedroom";
+            else if (t.Contains("kit"))   roomType = "kitchen";
+            else if (t.Contains("bath"))  roomType = "bathroom";
+            else if (t.Contains("study")) roomType = "studyroom";
+        }
+
+        scoreValue.text  = "…";
+        scoreStatus.text = "AI scan running…";
+
+        UIManager.Instance?.ShowToast($"Scanning {roomType}…");
+        VastuApiClient.Instance.AnalyzeCurrentRoom(roomType);
+    }
+
+    /// <summary>
+    /// Callback from VastuApiClient.OnAnalysisComplete — update the score card
+    /// with real AI data without the user needing to tap anything extra.
+    /// </summary>
+    void OnApiAnalysisComplete(VastuApiResponse result)
+    {
+        if (result == null) return;
+
+        scoreValue.text = result.overall_score + " / 100";
+
+        // Use the named colour constants; this also prevents CS0414 "unused field" warnings.
+        if (result.overall_score >= 80)
+        {
+            scoreStatus.text  = "Excellent layout. " + result.summary;
+            scoreValue.color  = Good;
+        }
+        else if (result.overall_score >= 50)
+        {
+            scoreStatus.text  = "Good — some improvements possible. " + result.summary;
+            scoreValue.color  = Warn;
+        }
+        else
+        {
+            scoreStatus.text  = "Needs attention. " + result.summary;
+            scoreValue.color  = Bad;
+        }
+    }
+
 
     void BuildAssistant(Transform parent)
     {
-        GameObject card = Card(parent, "VastuAssistant", 340f);
+        // Taller card so AI results (multiple items) fit without excessive scrolling.
+        GameObject card = Card(parent, "VastuAssistant", 480f);
         VerticalLayoutGroup layout = Stack(card, 18, 18, 10f);
         Text(card.transform, "SectionTitle", "Vastu assistant", 20, FontStyles.Bold, Ink);
-        Text(card.transform, "AssistantSub", "Ask about furniture placement, kitchen zones, or the entrance.", 13, FontStyles.Normal, Muted);
+        Text(card.transform, "AssistantSub", "AI scan results appear here. Ask about furniture placement or kitchen zones.", 13, FontStyles.Normal, Muted);
 
-        GameObject transcript = new GameObject("Transcript", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+        GameObject transcript = new GameObject("Transcript", typeof(RectTransform), typeof(Image), typeof(ScrollRect), typeof(RectMask2D));
         transcript.transform.SetParent(card.transform, false);
         transcript.GetComponent<Image>().color = new Color(0.93f, 0.96f, 0.94f, 1f);
-        VerticalLayoutGroup transcriptLayout = transcript.GetComponent<VerticalLayoutGroup>();
-        transcriptLayout.padding = new RectOffset(12, 12, 10, 10);
-        transcriptLayout.spacing = 7f;
-        transcriptLayout.childControlWidth = true;
-        transcriptLayout.childControlHeight = true;
-        transcriptLayout.childForceExpandHeight = false;
         LayoutElement transcriptSize = transcript.AddComponent<LayoutElement>();
-        transcriptSize.preferredHeight = 150f;
-        chatContent = transcript.transform;
+        transcriptSize.preferredHeight = 300f;
+
+        // Inner content container that grows with messages.
+        GameObject innerContent = new GameObject("InnerContent", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        innerContent.transform.SetParent(transcript.transform, false);
+        RectTransform innerRect = innerContent.GetComponent<RectTransform>();
+        innerRect.anchorMin = new Vector2(0f, 1f);
+        innerRect.anchorMax = new Vector2(1f, 1f);
+        innerRect.pivot     = new Vector2(0.5f, 1f);
+        innerRect.sizeDelta = Vector2.zero;
+
+        VerticalLayoutGroup transcriptLayout = innerContent.GetComponent<VerticalLayoutGroup>();
+        transcriptLayout.padding              = new RectOffset(12, 12, 10, 10);
+        transcriptLayout.spacing              = 7f;
+        transcriptLayout.childControlWidth    = true;
+        transcriptLayout.childControlHeight   = true;
+        transcriptLayout.childForceExpandHeight = false;
+
+        ContentSizeFitter innerFitter = innerContent.GetComponent<ContentSizeFitter>();
+        innerFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        ScrollRect scrollRect = transcript.GetComponent<ScrollRect>();
+        scrollRect.content    = innerRect;
+        scrollRect.viewport   = transcript.GetComponent<RectTransform>();
+        scrollRect.horizontal = false;
+        scrollRect.vertical   = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+        chatContent = innerContent.transform;
 
         GameObject inputRow = new GameObject("QuestionRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
         inputRow.transform.SetParent(card.transform, false);
         HorizontalLayoutGroup inputLayout = inputRow.GetComponent<HorizontalLayoutGroup>();
-        inputLayout.spacing = 8f;
-        inputLayout.childControlWidth = true;
-        inputLayout.childControlHeight = true;
+        inputLayout.spacing              = 8f;
+        inputLayout.childControlWidth    = true;
+        inputLayout.childControlHeight   = true;
         inputLayout.childForceExpandWidth = false;
 
         questionInput = CreateInput(inputRow.transform);
@@ -354,9 +470,32 @@ public class VastuDashboardView : MonoBehaviour
             return;
 
         renderedMessages.Add(message);
-        TextMeshProUGUI bubble = Text(chatContent, "Message", (message.isUser ? "You: " : "CoZee: ") + message.text, 13, message.isUser ? FontStyles.Bold : FontStyles.Normal, Ink);
-        bubble.gameObject.AddComponent<LayoutElement>().preferredHeight = 36f;
-        bubble.alignment = message.isUser ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.MidlineLeft;
+
+        // Estimate line count from newlines to give multi-line AI results enough height.
+        int lines = 1 + CountNewlines(message.text);
+        float bubbleHeight = Mathf.Max(36f, lines * 22f + 12f);
+
+        TextMeshProUGUI bubble = Text(chatContent, "Message",
+            (message.isUser ? "You: " : "CoZee: ") + message.text,
+            13,
+            message.isUser ? FontStyles.Bold : FontStyles.Normal,
+            Ink);
+        bubble.enableWordWrapping = true;
+        bubble.overflowMode       = TextOverflowModes.Overflow;
+        LayoutElement le = bubble.gameObject.AddComponent<LayoutElement>();
+        le.preferredHeight = bubbleHeight;
+        le.flexibleWidth   = 1f;
+        bubble.alignment   = message.isUser
+            ? TextAlignmentOptions.MidlineRight
+            : TextAlignmentOptions.TopLeft;
+    }
+
+    static int CountNewlines(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        int n = 0;
+        foreach (char c in s) if (c == '\n') n++;
+        return n;
     }
 
     static GameObject Card(Transform parent, string name, float height)
